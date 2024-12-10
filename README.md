@@ -11,11 +11,11 @@ A collection of scripts, apps and tools for Windows command line to :
 Installtion steps :
 
 1. Clone this repo to a folder of your choice
-  - Historically, this has been `%SYSTEMDRIVE%\Utils` but somewhere under your profile folder for security works equally well (E.g. `%APPDATA%\Utils`)
+   - Historically, this has been `%SYSTEMDRIVE%\Utils` but somewhere under your profile folder for security works equally well (E.g. `%APPDATA%\Utils`)
 2. Execute the setup script
-  - Execute from a terminal or double-click the `Setup.cmd` file from the root of where you cloned it to
+   - Execute from a terminal or double-click the `Setup.cmd` file from the root of where you cloned it to
 3. Enjoy a host of new commands, tools and apps at the command prompt
-  - Some examples below
+   - Some examples below
 
 ## Components
 
