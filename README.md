@@ -1,3 +1,4 @@
+
 # windows-console-utils
 
 A collection of scripts, apps and tools for Windows command line to :
@@ -36,20 +37,19 @@ Installtion steps :
 There are all sorts of App that I install and use on almost every Windows system I use, but often launching these apps or getting the files I want
 into them isn't always straightforward, or requires more pointing and clicking than I would like.
 
-So, I created some shortcut scripts to launch these apps with the files (and parameters) that I want
+So, I created some shortcut scripts to launch these apps with the files (and parameters) that I want :
 
 1. Open a file in [Notepad++](https://notepad-plus-plus.org/) quickly and easily
-
 ```cmd
 C:\Windows> npp system.ini
+```
 
-:Launch file at a particular line / column (Takes advantage of Notepad++ switches)
+2. Open a file in [Notepad++](https://notepad-plus-plus.org/) with the cursor at a specific line / column
+```cmd
 C:\Windows> npp system.ini -l 20 -c 5
 ```
 
-2. Compare 2 files in [WinMerge](https://winmerge.org/)
-
+3. Compare 2 files in [WinMerge](https://winmerge.org/)
 ```cmd
 C:\MyFolder> winmerge file_a.txt file_b.txt
 ```
-
