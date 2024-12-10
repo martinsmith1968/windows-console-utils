@@ -38,7 +38,7 @@ into them isn't always straightforward, or requires more pointing and clicking t
 
 So, I created some shortcut scripts to launch these apps with the files (and parameters) that I want
 
-1. Open a file in Notepad++ quickly and easily
+1. Open a file in [Notepad++](https://notepad-plus-plus.org/) quickly and easily
 
 ```cmd
 C:\Windows> npp system.ini
@@ -47,7 +47,7 @@ C:\Windows> npp system.ini
 C:\Windows> npp system.ini -l 20 -c 5
 ```
 
-2. Compare 2 files in WinMerge
+2. Compare 2 files in [WinMerge](https://winmerge.org/)
 
 ```cmd
 C:\MyFolder> winmerge file_a.txt file_b.txt
