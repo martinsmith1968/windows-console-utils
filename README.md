@@ -21,14 +21,14 @@ Installtion steps :
 
 | Folder | Description |
 |:---|:---|
-| \ (root) | Setup scripts
-| cmd      | Batch scripts (.cmd, .bat) to perform the majority of tasks
-| bin      | Binary executables from a variety of sources
-| gnuwin32 | Windows builds of *nix binaries (from the old GetGnuWin32 library). Many of the scripts rely on these to work
-| msbin    | Binary executables I've built (from my other repo(s))
-| js       | JavaScript scripts for various tasks (executed via NodeJS)
-| pwsh     | PowerShell scripts for various tasks
-| py       | Python scripts for various tasks (compatible with python 3)
+| \ (root) | In PATH ? | Setup scripts
+| cmd      | Y | Batch scripts (.cmd, .bat) to perform the majority of tasks
+| bin      | Y | Binary executables from a variety of sources
+| gnuwin32 | Y (bin) |Windows builds of *nix binaries (from the old GetGnuWin32 library). Many of the scripts rely on these to work
+| msbin    | Y | Binary executables I've built (from my other repo(s))
+| js       | N | JavaScript scripts for various tasks (executed via NodeJS)
+| pwsh     | Y | PowerShell scripts for various tasks
+| py       | N | Python scripts for various tasks (compatible with python 3)
 
 ## Examples
 
