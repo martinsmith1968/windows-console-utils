@@ -19,9 +19,9 @@ Installtion steps :
 
 ## Components
 
-| Folder | Description |
-|:---|:---|
-| \ (root) | In PATH ? | Setup scripts
+| Folder | In PATH ? | Description |
+|:---|:---:|:---|
+| \ (root) | N | Setup scripts
 | cmd      | Y | Batch scripts (.cmd, .bat) to perform the majority of tasks
 | bin      | Y | Binary executables from a variety of sources
 | gnuwin32 | Y (bin) |Windows builds of *nix binaries (from the old GetGnuWin32 library). Many of the scripts rely on these to work
