@@ -1,0 +1,124 @@
+@ECHO OFF
+
+SETLOCAL EnableDelayedExpansion
+
+CALL GetDateTime.cmd
+
+SET POS=0
+
+SET BASEPATH=
+SET APPNAME=
+SET APPDESCRIPTION=
+SET APPFILENAME=
+SET APPVERSION=1.0.0.0
+SET EXEFILENAME=
+SET ICONFILENAME=
+SET COMPANY=Martin Smith
+SET COPYRIGHT=(c) %CURRENTDATETIME_YEAR% %COMPANY%
+SET COMMENT=
+SET PARAMETERS=
+SET WAIT=5
+SET DEBUG=N
+
+:PARSE
+IF /I "%~1" == "-X" (
+  SET DEBUG=Y
+)
+IF /I "%~1" == "-B" (
+  SET BASEPATH=%~2
+  SHIFT && SHIFT
+  GOTO :PARSE
+)
+IF /I "%~1" == "-A" (
+  SET APPNAME=%~2
+  SHIFT && SHIFT
+  GOTO :PARSE
+)
+IF /I "%~1" == "-D" (
+  SET APPDESCRIPTION=%~2
+  SHIFT && SHIFT
+  GOTO :PARSE
+)
+IF /I "%~1" == "-F" (
+  SET APPFILENAME=%~2
+  SHIFT && SHIFT
+  GOTO :PARSE
+)
+IF /I "%~1" == "-E" (
+  SET EXEFILENAME=%~2
+  SHIFT && SHIFT
+  GOTO :PARSE
+)
+IF /I "%~1" == "-I" (
+  SET ICONFILENAME=%~2
+  SHIFT && SHIFT
+  GOTO :PARSE
+)
+IF /I "%~1" == "-CO" (
+  SET COMPANY=%~2
+  SHIFT && SHIFT
+  GOTO :PARSE
+)
+IF /I "%~1" == "-CP" (
+  SET COPYRIGHT=%~2
+  SHIFT && SHIFT
+  GOTO :PARSE
+)
+IF /I "%~1" == "-CM" (
+  SET COMMENT=%~2
+  SHIFT && SHIFT
+  GOTO :PARSE
+)
+IF /I "%~1" == "-V" (
+  SET APPVERSION=%~2
+  SHIFT && SHIFT
+  GOTO :PARSE
+)
+IF /I "%~1" == "-W" (
+  SET WAIT=%~2
+  SHIFT && SHIFT
+  GOTO :PARSE
+)
+
+IF NOT "%~1" == "" (
+  REM *** POSITIONAL PARAMETERS HERE
+  SHIFT
+  GOTO :PARSE
+)
+
+:VALIDATE
+IF NOT EXIST "%APPFILENAME%" (
+  ECHO.App script filename not found : %APPFILENAME%
+  GOTO :EOF
+)
+
+CALL FINDAPP.CMD AutoHotKey Compiler Ahk2Exe.exe
+SET AHKCOMPILEREXE=%APP%
+IF NOT EXIST "%APP%" (
+    ECHO.AHK Compiler not available
+    GOTO :EOF
+)
+
+ECHO.Killing %EXEFILENAME%
+PSKILL "%EXEFILENAME%"
+
+IF EXIST "%EXEFILENAME%" (
+  ECHO.Removing %EXEFILENAME%...
+  DEL /Q "%EXEFILENAME%"
+)
+
+ECHO.Building %APPNAME%...
+@IF %DEBUG% == Y @ECHO ON
+"%AHKCOMPILEREXE%" /in "%APPFILENAME%" /icon "%ICONFILENAME%"
+@IF %DEBUG% == Y @ECHO OFF
+
+@IF %DEBUG% == Y @ECHO ON
+IF EXIST "%EXEFILENAME%" (
+  ECHO.Version Patching %EXEFILENAME%...
+  VERPATCH "%EXEFILENAME%" "%APPVERSION%" /s company "%COMPANY%" /s desc "%APPDESCRIPTION%" /s product "%APPNAME%" /s copyright "%COPYRIGHT%" /s comment "%COMMENT%" /pv "%APPVERSION%" /high %PARAMETERS%
+)
+@IF %DEBUG% == Y @ECHO OFF
+
+IF %WAIT% GTR 0 (
+  PAUSEN -t 5
+)

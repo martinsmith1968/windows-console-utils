@@ -1,0 +1,74 @@
+@ECHO OFF
+
+SETLOCAL
+
+SET SCRIPTPATH=%~dp0
+
+SET POS=0
+SET ARGS=
+SET FOLDER=.
+SET FINDPARENTGIT=Y
+
+:PARSE
+IF /I "%~1" == "/FP"  SET FINDPARENTGIT=Y&& SHIFT && GOTO :PARSE
+IF /I "%~1" == "-FP"  SET FINDPARENTGIT=Y&& SHIFT && GOTO :PARSE
+IF /I "%~1" == "/FP-" SET FINDPARENTGIT=N&& SHIFT && GOTO :PARSE
+IF /I "%~1" == "-FP-" SET FINDPARENTGIT=N&& SHIFT && GOTO :PARSE
+
+SET /A POS+=1
+IF NOT "%~1" == "" (
+  IF %POS% EQU 1 (
+    SET FOLDER=%~dpnx1
+  ) ELSE (
+    SET ARGS=%ARGS% "%~1"
+  )
+  SHIFT
+  GOTO :PARSE
+)
+
+:FINDFOLDER
+CALL :ISGITFOLDER "%FOLDER%"
+IF "%ISGITFOLDER%" == "Y" GOTO :GO
+
+IF "%FINDPARENTGIT%" == "N" (
+  CALL :ERROR "Not a git folder: %FOLDER%"
+  GOTO :EOF
+)
+
+SET LASTFOLDER=%FOLDER%
+CALL :GETFULLPATH "%FOLDER%\.."
+SET FOLDER=%FULLPATH%
+
+IF /I "%FOLDER%" == "%LASTFOLDER%" (
+  CALL :ERROR "Not found a git folder: %FOLDER%"
+  GOTO :EOF
+)
+
+ECHO.Checking: %FOLDER%
+GOTO :FINDFOLDER
+
+
+:GO
+"%SCRIPTPATH%\StartApp.cmd" /n "%~n0" /t "GitKraken" /e "gitkraken.cmd" /f "gitkraken" /s "bin" /d "Open a Repo folder in GitKraken" /od "[folder] " /uc /rac 1 /nqa --path "%FOLDER%" %ARGS%
+
+GOTO :EOF
+
+
+:ERROR
+ECHO.ERROR: %~1
+GOTO :EOF
+
+
+:GETFULLPATH
+SET FULLPATH=%~dpnx1
+GOTO :EOF
+
+
+:ISGITFOLDER
+SET ISGITFOLDER=N
+
+IF "%~1" == "" GOTO :EOF
+
+IF EXIST "%~1\.git\*.*" SET ISGITFOLDER=Y
+
+GOTO :EOF

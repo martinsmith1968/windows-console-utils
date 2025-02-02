@@ -1,0 +1,47 @@
+@ECHO OFF
+
+SETLOCAL
+
+SET SCRIPTPATH=%~dp0
+SET SCRIPTNAME=%~n0
+SET SCRIPTFULLFILENAME=%~dpnx0
+
+IF "%~1" == "" (
+	CALL :USAGE
+	GOTO :EOF
+)
+
+SET FILENAME=%~1
+SET LOGFILENAME=%FILENAME%.log
+SET NEWFILENAME=%FILENAME%.new
+
+FOR /F %%A in ('WC -l "%FILENAME%"') DO SET LINECOUNT=%%A
+
+SET COUNT=0
+
+:LOOP
+SET /A COUNT+=1
+SET LINE=
+SET /p LINE=<"%FILENAME%"
+
+IF "%LINE%" == "" GOTO :EOF
+
+ECHO.----------------------------------------------------------------------
+ECHO.%COUNT%/%LINECOUNT% : %LINE%
+CALL DL.CMD %LINE%
+SET RC=%ERRORLEVEL%
+
+ECHO.DATE: %DATE%  TIME: %TIME%  RC: %RC%  LINE: %LINE%>>%LOGFILENAME%
+
+SED -n -e "2,$p" "%FILENAME%" > "%NEWFILENAME%"
+MOVE /Y "%NEWFILENAME%" "%FILENAME%" >NUL
+
+GOTO :LOOP
+
+
+:USAGE
+ECHO.%SCRIPTNAME% - Download a url as a file
+ECHO.
+ECHO.%SCRIPTNAME% [url] { [filename] }
+
+GOTO :EOF

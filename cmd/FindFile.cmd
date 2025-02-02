@@ -1,0 +1,119 @@
+@ECHO OFF
+
+SETLOCAL
+
+SET SCRIPTPATH=%~dp0
+SET SCRIPTNAME=%~n0
+SET SCRIPTFULLFILENAME=%~dpnx0
+
+SET DEBUG=N
+SET POS=0
+SET FILENAME=
+SET ROOTDIR=%SYSTEMDRIVE%\
+SET SAVELIST=Y
+SET SAVEOUTPUTDIR=%TEMP%
+SET ATTRDIRS=
+SET ATTRHIDDEN=
+SET ATTRSYSTEM=
+SET ATTRREADONLY=
+SET PAUSE=
+
+:PARSE
+IF /I "%~1" == "/?"  CALL :USAGE && GOTO :EOF
+IF /I "%~1" == "-?"  CALL :USAGE && GOTO :EOF
+IF /I "%~1" == "/X"  SET DEBUG=Y&& SHIFT && GOTO :PARSE
+IF /I "%~1" == "-X"  SET DEBUG=Y&& SHIFT && GOTO :PARSE
+IF /I "%~1" == "-F"  SET ROOTDIR=%~2&& SHIFT && SHIFT && GOTO :PARSE
+IF /I "%~1" == "/F"  SET ROOTDIR=%~2&& SHIFT && SHIFT && GOTO :PARSE
+IF /I "%~1" == "-P"  SET PAUSE=/p&& SHIFT && GOTO :PARSE
+IF /I "%~1" == "/P"  SET PAUSE=/p&& SHIFT && GOTO :PARSE
+IF /I "%~1" == "-D"  SET ATTRDIRS=D&& SHIFT && GOTO :PARSE
+IF /I "%~1" == "/D"  SET ATTRDIRS=D&& SHIFT && GOTO :PARSE
+IF /I "%~1" == "-D-" SET ATTRDIRS=-D&& SHIFT && GOTO :PARSE
+IF /I "%~1" == "/D-" SET ATTRDIRS=-D&& SHIFT && GOTO :PARSE
+IF /I "%~1" == "-S"  SET ATTRSYSTEM=S&& SHIFT && GOTO :PARSE
+IF /I "%~1" == "/S"  SET ATTRSYSTEM=S&& SHIFT && GOTO :PARSE
+IF /I "%~1" == "-S-" SET ATTRSYSTEM=-S&& SHIFT && GOTO :PARSE
+IF /I "%~1" == "/S-" SET ATTRSYSTEM=-S&& SHIFT && GOTO :PARSE
+IF /I "%~1" == "-H"  SET ATTRHIDDEN=H&& SHIFT && GOTO :PARSE
+IF /I "%~1" == "/H"  SET ATTRHIDDEN=H&& SHIFT && GOTO :PARSE
+IF /I "%~1" == "-H-" SET ATTRHIDDEN=-H&& SHIFT && GOTO :PARSE
+IF /I "%~1" == "/H-" SET ATTRHIDDEN=-H&& SHIFT && GOTO :PARSE
+IF /I "%~1" == "-R"  SET ATTRREADONLY=R&& SHIFT && GOTO :PARSE
+IF /I "%~1" == "/R"  SET ATTRREADONLY=R&& SHIFT && GOTO :PARSE
+IF /I "%~1" == "-R-" SET ATTRREADONLY=-R&& SHIFT && GOTO :PARSE
+IF /I "%~1" == "/R-" SET ATTRREADONLY=-R&& SHIFT && GOTO :PARSE
+IF /I "%~1" == "/O"  SET SAVELIST=Y&& SHIFT && GOTO :PARSE
+IF /I "%~1" == "-O"  SET SAVELIST=Y&& SHIFT && GOTO :PARSE
+IF /I "%~1" == "/O-" SET SAVELIST=N&& SHIFT && GOTO :PARSE
+IF /I "%~1" == "-O-" SET SAVELIST=N&& SHIFT && GOTO :PARSE
+IF /I "%~1" == "/OD" SET SAVEOUTPUTDIR=%~1&& SHIFT && SHIFT && GOTO :PARSE
+IF /I "%~1" == "-OD" SET SAVEOUTPUTDIR=%~1&& SHIFT && SHIFT && GOTO :PARSE
+
+SET /A POS+=1
+IF NOT "%~1" == "" (
+  IF %POS% EQU 1 (
+    SET FILENAME=%~1
+  )
+  
+  SHIFT
+  GOTO :PARSE
+)
+
+:VALIDATE
+IF "%FILENAME%" == "" (
+    CALL :USAGE
+    CALL :ERROR "FileName not supplied"
+    GOTO :EOF
+)
+
+ECHO.Searching %ROOTDIR% for: %FILENAME%
+
+@IF "%DEBUG%" == "Y" @ECHO ON
+PUSHD "%ROOTDIR%"
+
+SET EXTRA=
+IF "%SAVELIST%" == "Y" (
+  CALL :ADDOUTPUTFILENAMETOEXTRA
+)
+
+DIR %FILENAME% /s /b %PAUSE% /A%ATTRDIRS%%ATTRSYSTEM%%ATTRHIDDEN%%ATTRREADONLY% %EXTRA%
+@IF "%DEBUG%" == "Y" @ECHO OFF
+
+POPD
+
+IF "%SAVELIST%" == "Y" (
+  ECHO.
+  ECHO.Output saved to : %UNIQUETEMPFILENAME%
+)
+
+GOTO :EOF
+
+
+:ADDOUTPUTFILENAMETOEXTRA
+CALL "%SCRIPTPATH%\BuildUniqueTempFileName.cmd" "%SCRIPTNAME%" "%SAVEOUTPUTDIR%"
+SET OUTPUTFILENAME=%UNIQUETEMPFILENAME%
+SET EXTRA=%EXTRA% ^| TEE "%OUTPUTFILENAME%"
+
+GOTO :EOF
+
+
+:USAGE
+ECHO.%SCRIPTNAME% - Locate a file
+ECHO.
+ECHO.Usage: %~n0 [filename] [options]
+ECHO.
+ECHO.Options:
+ECHO./F     - Root Directory to start searching from
+ECHO./P     - Pause after each screen
+ECHO./D     - Search for Directories only (/D- to exclude)
+ECHO./S     - Search for System Files only (/S- to exclude)
+ECHO./H     - Search for Hidden Files only (/H- to exclude)
+ECHO./R     - Search for ReadOnly Files only (/R- to exclude)
+
+GOTO :EOF
+
+
+:ERROR
+ECHO.Error: %~1
+GOTO :EOF
