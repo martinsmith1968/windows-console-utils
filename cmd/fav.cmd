@@ -418,7 +418,7 @@ GOTO :EOF
 CALL "%SCRIPTPATH%\GetDateTime.cmd"
 
 ECHO.%SCRIPTNAME% - Control favourite folders
-ECHO.(c) DNX Solutions Ltd %CURRENTDATETIME_YEAR% (2013)
+ECHO.(c) Martin Smith 2013-%CURRENTDATETIME_YEAR%
 ECHO.
 
 GOTO :EOF
