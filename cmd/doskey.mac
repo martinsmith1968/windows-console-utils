@@ -3,7 +3,7 @@ l=ls --color=auto $*
 ll=ls -l --color=auto $*
 la=ls -la --color=auto $*
 d=dir /ogen $*
-t=titl /n $*
+t=titl N $*
 ps=pwsh $*
 ps2=powershell $*
 dbc=doublecmd $*
