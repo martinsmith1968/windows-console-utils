@@ -15,3 +15,4 @@ f=fav $*
 k=kubectl $*
 py=python $*
 vpip=python -m pip $*
+loge=LogExpert $*
