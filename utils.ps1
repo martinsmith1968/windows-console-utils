@@ -17,6 +17,7 @@ param (
     [string]$command = "install"
    ,[string]$targetFolder = ""
    ,[string]$osType = "Any"
+   ,[bool]$modifyPath = $true
    ,[bool]$verbose = $true
    ,[bool]$debug = $true
 )
@@ -428,32 +429,34 @@ foreach($app in $install_apps) {
     $app.Install($targetFolder, $verbose, $debug)
 }
 
-# Add target directories to PATH
-Write-Log $separatorLine
-Write-Log "-- Building new PATHs"
+if ($modifyPath) {
+    # Add target directories to PATH
+    Write-Log $separatorLine
+    Write-Log "-- Building new PATHs"
 
-$utilsPaths = @()
-$utilsPaths += (Join-Path $targetFolder "cmd")
-$utilsPaths += (Join-Path $targetFolder "bin")
-$utilsPaths += (Join-Path $targetFolder "msbin")
-$utilsPaths += (Join-Path $targetFolder "gnuwin32" "bin")
-$utilsPaths += (Join-Path $targetFolder "gnuwin32" "sbin")
-$utilsPaths += (Join-Path $targetFolder "sysinternals")
+    $utilsPaths = @()
+    $utilsPaths += (Join-Path $targetFolder "cmd")
+    $utilsPaths += (Join-Path $targetFolder "bin")
+    $utilsPaths += (Join-Path $targetFolder "msbin")
+    $utilsPaths += (Join-Path $targetFolder "gnuwin32" "bin")
+    $utilsPaths += (Join-Path $targetFolder "gnuwin32" "sbin")
+    $utilsPaths += (Join-Path $targetFolder "sysinternals")
 
-Write-Log "-- Retrieving existing PATH"
-$existingPath = ([System.Environment]::GetEnvironmentVariable('PATH', [System.EnvironmentVariableTarget]::User))
-$existingPaths = $existingPath.Split(";") | where-object { $_ -notlike ($targetFolder + "*") } | foreach-object { $_.Trim("\") }
-Write-Log "-- Building new PATH value"
-$newPaths = $utilsPaths + $existingPaths
-$newPathValue = $newPaths -join ";"
-Write-Log "-- Setting PATH value"
-Write-Log ""
-Write-Log "Old PATH : ${existingPath}"
-Write-Log-All ($existingPath.split(";"))
-Write-Log ""
-Write-Log "New PATH : ${newPathValue}"
-Write-Log-All ($newPathValue.split(";"))
-[System.Environment]::SetEnvironmentVariable('PATH', $newPathValue, [System.EnvironmentVariableTarget]::User)
+    Write-Log "-- Retrieving existing PATH"
+    $existingPath = ([System.Environment]::GetEnvironmentVariable('PATH', [System.EnvironmentVariableTarget]::User))
+    $existingPaths = $existingPath.Split(";") | where-object { $_ -notlike ($targetFolder + "*") } | foreach-object { $_.Trim("\") }
+    Write-Log "-- Building new PATH value"
+    $newPaths = $utilsPaths + $existingPaths
+    $newPathValue = $newPaths -join ";"
+    Write-Log "-- Setting PATH value"
+    Write-Log ""
+    Write-Log "Old PATH : ${existingPath}"
+    Write-Log-All ($existingPath.split(";"))
+    Write-Log ""
+    Write-Log "New PATH : ${newPathValue}"
+    Write-Log-All ($newPathValue.split(";"))
+    [System.Environment]::SetEnvironmentVariable('PATH', $newPathValue, [System.EnvironmentVariableTarget]::User)
+}
 
 # Complete
 Write-Log
