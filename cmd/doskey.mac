@@ -16,3 +16,4 @@ k=kubectl $*
 py=python $*
 vpip=python -m pip $*
 loge=LogExpert $*
+kc=kubectl $*
