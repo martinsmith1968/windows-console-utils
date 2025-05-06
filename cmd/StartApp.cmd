@@ -1,0 +1,212 @@
+@ECHO OFF
+
+SETLOCAL EnableDelayedExpansion
+
+SET SCRIPTPATH=%~dp0
+SET SCRIPTNAME=%~n0
+SET SCRIPTFULLFILENAME=%~dpnx0
+
+SET DEBUG=N
+SET HELP=N
+SET POSITIONALARGCOUNT=0
+
+SET APPHELP=N
+SET USESTART=N
+SET USECALL=N
+SET POSITIONALARGS=
+SET NAME=
+SET TITLE=
+SET DESC=
+SET EXE=
+SET FOLDER=
+SET SUBFOLDER=
+SET OPTIONSDESC=
+SET HELPCOMMAND=
+SET REQUIREDARGSCOUNT=0
+SET QUOTEARGS=Y
+SET OPTIONARGCOUNT=0
+SET OPTIONARGTEXT=
+
+:PARSEOPTS
+IF /I "%~1" == "/??" SET HELP=Y&& SHIFT && GOTO :PARSEOPTS
+IF /I "%~1" == "-??" SET HELP=Y&& SHIFT && GOTO :PARSEOPTS
+IF /I "%~1" == "/?"  SET APPHELP=Y&& SHIFT && GOTO :PARSEOPTS
+IF /I "%~1" == "-?"  SET APPHELP=Y&& SHIFT && GOTO :PARSEOPTS
+IF /I "%~1" == "/X"  SET DEBUG=Y&& SHIFT && GOTO :PARSEOPTS
+IF /I "%~1" == "-X"  SET DEBUG=Y&& SHIFT && GOTO :PARSEOPTS
+IF /I "%~1" == "/US" SET USESTART=Y&& SHIFT && GOTO :PARSEOPTS
+IF /I "%~1" == "-US" SET USESTART=Y&& SHIFT && GOTO :PARSEOPTS
+IF /I "%~1" == "/UC" SET USECALL=Y&& SHIFT && GOTO :PARSEOPTS
+IF /I "%~1" == "-UC" SET USECALL=Y&& SHIFT && GOTO :PARSEOPTS
+IF /I "%~1" == "/N"  SET NAME=%~2&& SHIFT && SHIFT && GOTO :PARSEOPTS
+IF /I "%~1" == "-N"  SET NAME=%~2&& SHIFT && SHIFT && GOTO :PARSEOPTS
+IF /I "%~1" == "/T"  SET TITLE=%~2&& SHIFT && SHIFT && GOTO :PARSEOPTS
+IF /I "%~1" == "-T"  SET TITLE=%~2&& SHIFT && SHIFT && GOTO :PARSEOPTS
+IF /I "%~1" == "/D"  SET DESC=%~2&& SHIFT && SHIFT && GOTO :PARSEOPTS
+IF /I "%~1" == "-D"  SET DESC=%~2&& SHIFT && SHIFT && GOTO :PARSEOPTS
+IF /I "%~1" == "/E"  SET EXE=%~2&& SHIFT && SHIFT && GOTO :PARSEOPTS
+IF /I "%~1" == "-E"  SET EXE=%~2&& SHIFT && SHIFT && GOTO :PARSEOPTS
+IF /I "%~1" == "/F"  SET FOLDER=%~2&& SHIFT && SHIFT && GOTO :PARSEOPTS
+IF /I "%~1" == "-F"  SET FOLDER=%~2&& SHIFT && SHIFT && GOTO :PARSEOPTS
+IF /I "%~1" == "/S"  SET SUBFOLDER=%~2&& SHIFT && SHIFT && GOTO :PARSEOPTS
+IF /I "%~1" == "-S"  SET SUBFOLDER=%~2&& SHIFT && SHIFT && GOTO :PARSEOPTS
+IF /I "%~1" == "/OD" SET OPTIONSDESC=%~2&& SHIFT && SHIFT && GOTO :PARSEOPTS
+IF /I "%~1" == "-OD" SET OPTIONSDESC=%~2&& SHIFT && SHIFT && GOTO :PARSEOPTS
+IF /I "%~1" == "/OA" (
+  CALL :ADDOPTIONARG "%~2"
+  SHIFT
+  SHIFT
+  GOTO :PARSEOPTS
+)
+IF /I "%~1" == "-OA" (
+  CALL :ADDOPTIONARG "%~2"
+  SHIFT
+  SHIFT
+  GOTO :PARSEOPTS
+)
+IF /I "%~1" == "/HC" SET HELPCOMMAND=%~2&& SHIFT && SHIFT && GOTO :PARSEOPTS
+IF /I "%~1" == "-HC" SET HELPCOMMAND=%~2&& SHIFT && SHIFT && GOTO :PARSEOPTS
+IF /I "%~1" == "/P"  SHIFT && GOTO :PARSEPOSITIONAL
+IF /I "%~1" == "-P"  SHIFT && GOTO :PARSEPOSITIONAL
+IF /I "%~1" == "/RAC" SET REQUIREDARGSCOUNT=%~2&& SHIFT && SHIFT && GOTO :PARSEOPTS
+IF /I "%~1" == "-RAC" SET REQUIREDARGSCOUNT=%~2&& SHIFT && SHIFT && GOTO :PARSEOPTS
+IF /I "%~1" == "/NQA" SET QUOTEARGS=N&&SHIFT && GOTO :PARSEOPTS
+IF /I "%~1" == "-NQA" SET QUOTEARGS=N&&SHIFT && GOTO :PARSEOPTS
+
+:PARSEPOSITIONAL
+IF NOT "%~1" == "" (
+  SET /A POSITIONALARGCOUNT+=1
+  IF "%POSITIONALARGS%" == "" (
+    SET POSITIONALARGS=%~1
+  ) ELSE (
+    SET POSITIONALARGS=%POSITIONALARGS% %~1
+  )
+  SHIFT
+  GOTO :PARSEOPTS
+)
+
+REM Debug ?
+IF "%DEBUG%" == "Y" (
+  ECHO.DEBUG:              [%DEBUG%]
+  ECHO.HELP:               [%HELP%]
+  ECHO.POSITIONALARGCOUNT: [%POSITIONALARGCOUNT%]
+
+  ECHO.APPHELP:            [%APPHELP%]
+  ECHO.USESTART:           [%USESTART%]
+  ECHO.USECALL:            [%USECALL%]
+  ECHO.POSITIONALARGS:     [%POSITIONALARGS%]
+  ECHO.NAME:               [%NAME%]
+  ECHO.TITLE:              [%TITLE%]
+  ECHO.DESC:               [%DESC%]
+  ECHO.EXE:                [%EXE%]
+  ECHO.FOLDER:             [%FOLDER%]
+  ECHO.SUBFOLDER:          [%SUBFOLDER%]
+  ECHO.OPTIONSDESC:        [%OPTIONSDESC%]
+  ECHO.HELPCOMMAND:        [%HELPCOMMAND%]
+  ECHO.REQUIREDARGSCOUNT:  [%REQUIREDARGSCOUNT%]
+  ECHO.OPTIONARGCOUNT:     [%OPTIONARGCOUNT%]
+  FOR /L %%L IN (1,1,%OPTIONARGCOUNT%) DO (
+    ECHO.OPTIONARGTEXT[%%L}:   !OPTIONARGTEXT[%%L]!
+  )
+  ECHO.QUOTEARGS:          [%QUOTEARGS%]
+)
+
+REM Detect Help Command(s)
+IF "%EXE%" == "" SET HELP=Y
+IF "%HELP%" == "Y" CALL :USAGE && GOTO :EOF
+IF "%APPHELP%" == "Y" CALL :APPUSAGE && GOTO :EOF
+
+REM Locate App
+CALL %SCRIPTPATH%FINDAPP.CMD "%FOLDER%" "%SUBFOLDER%" "%EXE%"
+IF NOT EXIST "%APP%" (
+  CALL :ERROR "%TITLE% is not installed or is not available"
+  GOTO :EOF
+)
+
+REM Validate
+IF %REQUIREDARGSCOUNT% GTR %POSITIONALARGCOUNT% (
+  CALL :APPUSAGE
+  ECHO.
+  CALL :ERROR "Invalid command arguments"
+  GOTO :EOF
+)
+
+REM Build Arguments
+SET APPARGS=%POSITIONALARGS%
+IF "%QUOTEARGS%" == "Y" SET APPARGS="%POSITIONALARGS%"
+
+REM Execute
+@IF "%DEBUG%" == "Y" @ECHO ON
+IF "%USESTART%" == "Y" (
+  START "%TITLE%" "%APP%" %APPARGS%
+) ELSE IF "%USECALL%" == "Y" (
+  CALL "%APP%" %APPARGS%
+) ELSE (
+  "%APP%" %APPARGS%
+)
+@IF "%DEBUG%" == "Y" @ECHO OFF
+GOTO :EOF
+
+
+:APPUSAGE
+ECHO.%TITLE% - %DESC%
+ECHO.
+ECHO.Usage: %NAME% %OPTIONSDESC%
+IF %OPTIONARGCOUNT% GTR 0 (
+  ECHO.
+  ECHO.Options: [-/] 
+  ECHO.
+  FOR /L %%L IN (1,1,%OPTIONARGCOUNT%) DO (
+    ECHO.!OPTIONARGTEXT[%%L]!
+  )
+)
+IF NOT "%HELPCOMMAND%" == "" (
+  ECHO.
+  "%APP%" %HELPCOMMAND%
+)
+
+GOTO :EOF
+
+
+:USAGE
+ECHO.%~n0 - Start an Application
+ECHO.
+ECHO.Usage: %~n0 [options]
+ECHO.
+ECHO.Options: [-/]
+ECHO.
+ECHO.??  - Show Usage
+ECHO.X   - Set Debug Mode
+ECHO.?   - Show App Usage
+ECHO.US  - Use START to execute App
+ECHO.UC  - Use CALL to execute App
+ECHO.N   - Set App Command name  (Usually calling command name)
+ECHO.T   - Set App Title
+ECHO.D   - Set App Description
+ECHO.E   - Set App Executable name
+ECHO.F   - Set App Folder
+ECHO.S   - Set App Sub-Folder
+ECHO.OD  - Set App Options Description
+ECHO.HC  - Set App Help Command for detailed command help
+ECHO.RAC - Set App Required Arguments Count
+ECHO.NQA - Do NOT Quote Arguments
+ECHO.P   - Specify App Positional Argument
+ECHO.
+ECHO.All other unrecognised parameters are passed directly as arguments to the app
+
+GOTO :EOF
+
+
+:ADDOPTIONARG
+IF "%~1" == "" GOTO :EOF
+
+SET /A OPTIONARGCOUNT+=1
+
+SET OPTIONARGTEXT[%OPTIONARGCOUNT%]=%~1
+
+GOTO :EOF
+
+
+:ERROR
+ECHO.Error: %~1
+GOTO :EOF

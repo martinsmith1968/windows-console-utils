@@ -1,0 +1,159 @@
+@ECHO OFF
+
+SETLOCAL EnableDelayedExpansion
+
+SET SCRIPTPATH=%~dp0
+SET SCRIPTNAME=%~n0
+SET SCRIPTFULLFILENAME=%~dpnx0
+
+SET DEBUG=N
+SET REPO=
+SET SUBFOLDER=.
+SET FILEEXTENSIONS=*.*
+SET ROOTOUTPUTFOLDER=%TEMP%
+
+:CHECKOPTION
+IF /I "%~1" == "-x" (
+  SET DEBUG=Y
+  SHIFT
+)
+
+IF /I "%~1" == "-r" (
+  SET REPO=%~2
+  SHIFT
+  SHIFT
+)
+
+IF /I "%~1" == "-f" (
+  SET SUBFOLDER=%~2
+  SHIFT
+  SHIFT
+)
+
+IF /I "%~1" == "-e" (
+  SET FILEEXTENSIONS=%~2
+  SHIFT
+  SHIFT
+)
+
+IF /I "%~1" == "-o" (
+  SET ROOTOUTPUTFOLDER=%~2
+  SHIFT
+  SHIFT
+)
+
+IF NOT "%~1" == "" GOTO :CHECKOPTION
+
+REM VALIDATE
+SET OK=Y
+IF "%REPO%" == ""             SET OK=N
+IF "%SUBFOLDER%" == ""        SET OK=N
+IF "%ROOTOUTPUTFOLDER%" == "" SET OK=N
+
+IF NOT "%OK%" == "Y" (
+  CALL :USAGE
+  GOTO :EOF
+)
+
+IF "%DEBUG%" == "Y" ECHO.REPO: %REPO%
+IF "%DEBUG%" == "Y" ECHO.SUBFOLDER: %SUBFOLDER%
+IF "%DEBUG%" == "Y" ECHO.FILEEXTENSIONS: %FILEEXTENSIONS%
+IF "%DEBUG%" == "Y" ECHO.ROOTOUTPUTFOLDER: %ROOTOUTPUTFOLDER%
+
+REM GO
+SET BASEOUTPUTFOLDER=%ROOTOUTPUTFOLDER%\%SCRIPTNAME%\%REPO%
+SET TEMPFOLDER=%BASEOUTPUTFOLDER%
+SET COMMITLIST=%BASEOUTPUTFOLDER%\commits
+
+IF EXIST "%BASEOUTPUTFOLDER%\*.*" RMDIR /S /Q "%BASEOUTPUTFOLDER%"
+IF NOT EXIST "%BASEOUTPUTFOLDER%" MD "%BASEOUTPUTFOLDER%"
+
+PUSHD "%REPO%"
+
+git clean -f -d
+git reset --hard
+git checkout -q --force master
+git log --pretty="%%h %%as %%s" --reverse > "%COMMITLIST%"
+
+FOR /F "tokens=1-2" %%C IN (%COMMITLIST%) DO (
+  ECHO.
+  ECHO.Scanning: Hash: %%~C    Date: %%~D
+  CALL :DOHASH %%~C %%~D
+)
+
+POPD
+
+GOTO :EOF
+
+
+:USAGE
+ECHO.Usage: %SCRIPTNAME% -r [repo-folder-name] -f [sub-folder (%SUBFOLDER%)] -e [file-extensions (%FILEEXTENSIONS%)] -o [output-base-folder (%ROOTOUTPUTFOLDER%)]
+ECHO.
+ECHO.Note: file-extensions should be comma separated
+ECHO.  Eg: *.yaml,*.json
+GOTO :EOF
+
+
+:DOHASH
+IF "%~1" == "" GOTO :EOF
+IF "%~2" == "" GOTO :EOF
+
+SET HASH=%~1
+SET DATE=%~2
+
+ECHO.Checking out: %HASH%
+git clean -f -d
+git reset --hard
+git checkout -q --force %HASH%
+
+REM SET SUBFOLDER=openapi
+REM SET SUBFOLDER=src\ClearBank.JPM.Emulator.ServiceFabric.Api\DataContracts\WirePayments
+REM SET SUBFOLDER=src\ClearBank.JPM.Client\DataContracts\WirePayments
+
+FOR /F "delims=," %%G IN ("%FILEEXTENSIONS%") DO CALL :CHECKEXTENSION %%~G
+
+REM FOR %%F IN (%SUBFOLDER%\*.cs) DO CALL :CHECKFILE "%%~F"
+REM FOR %%F IN (%SUBFOLDER%\tsapi*.yaml) DO CALL :CHECKFILE "%%~F"
+REM FOR %%F IN (%SUBFOLDER%\wires*.yaml) DO CALL :CHECKFILE "%%~F"
+REM FOR %%F IN (%SUBFOLDER%\tsapi*.json) DO CALL :CHECKFILE "%%~F"
+REM FOR %%F IN (%SUBFOLDER%\wires*.json) DO CALL :CHECKFILE "%%~F"
+REM FOR %%F IN (%SUBFOLDER%\*.cmd) DO CALL :CHECKFILE "%%~F"
+REM FOR %%F IN (%SUBFOLDER%\*.ps1) DO CALL :CHECKFILE "%%~F"
+
+GOTO :EOF
+
+
+:CHECKEXTENSION
+IF "%~1" == "" GOTO :EOF
+
+ECHO.Checking for: %SUBFOLDER%\%~1
+
+FOR %%F IN (%SUBFOLDER%\%~1) DO CALL :CHECKFILE "%%~F"
+
+GOTO :EOF
+
+
+:CHECKFILE
+IF "%~1" == "" GOTO :EOF
+
+SET HASHFILENAME=%~nx1.md5
+SET BASEHASHFILENAME=%TEMPFOLDER%\%HASHFILENAME%
+
+SET COPY=N
+
+md5 -o%HASHFILENAME% "%~1"
+
+fc "%HASHFILENAME%" "%BASEHASHFILENAME%" 2>&1 > NUL
+IF %ERRORLEVEL% NEQ 0 SET COPY=Y
+
+MOVE /Y "%HASHFILENAME%" "%BASEHASHFILENAME%" > NUL
+
+IF "%COPY%" == "N" GOTO :EOF
+
+SET DESTFOLDER=%BASEOUTPUTFOLDER%\%DATE%-%HASH%
+IF NOT EXIST "%DESTFOLDER%" MD "%DESTFOLDER%"
+
+ECHO.Copying: %~nx1
+COPY "%~1" "%DESTFOLDER%\%~nx1" /Y > NUL
+
+GOTO :EOF

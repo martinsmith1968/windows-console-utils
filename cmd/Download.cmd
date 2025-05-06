@@ -1,0 +1,48 @@
+@ECHO OFF
+
+SETLOCAL EnableDelayedExpansion
+
+SET SCRIPTPATH=%~dp0
+SET SCRIPTNAME=%~n0
+SET SCRIPTFULLFILENAME=%~dpnx0
+
+FOR %%* IN (.) DO SET CURRENTDIR=%%~dpn*
+FOR %%* IN (.) DO SET CURRENTDIRNAME=%%~n*
+
+IF "%~1" == "" (
+  CALL :USAGE
+  GOTO :EOF
+)
+
+SET URL=%~1
+SET FILENAME=%~2
+SET OPTIONS=
+
+IF NOT "%FILENAME%" == "" (
+  SET OPTIONS=!OPTIONS! -O "%~2.tmp"
+)
+
+WGET "%URL%" %OPTIONS%
+IF NOT ERRORLEVEL 0 (
+  CALL :ERROR Download failed !
+  GOTO :EOF
+)
+
+IF NOT "%FILENAME%" == "" (
+  MOVE /Y "%FILENAME%.tmp" "%FILENAME%" >NUL
+)
+
+GOTO :EOF
+
+
+:USAGE
+ECHO.%SCRIPTNAME% - Download a file via URL
+ECHO.
+ECHO.Usage: %~n0 [filename]
+
+GOTO :EOF
+
+
+:ERROR
+ECHO.Error: %~1
+GOTO :EOF

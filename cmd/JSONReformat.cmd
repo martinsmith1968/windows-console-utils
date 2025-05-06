@@ -1,0 +1,7 @@
+@ECHO OFF
+
+SETLOCAL
+
+SET SCRIPTPATH=$~dp0
+
+CALL "%SCRIPTPATH%\PyRunner.cmd "%~n0" %*

@@ -1,0 +1,77 @@
+@ECHO OFF
+
+SETLOCAL
+
+SET SCRIPTNAME=%~n0
+SET SCRIPTFILENAME=%~nx0
+SET SCRIPTPATH=%~dp0
+
+SET DEBUG=N
+SET HELP=N
+SET DRYRUN=N
+SET ARGPOS=0
+SET COMMANDPREFIX=
+
+SET VERBOSE=N
+SET FILENAME=
+SET PATTERNS=
+SET ADDITIONAL=
+
+:PARSE
+IF /I "%~1" == "/X" SET DEBUG=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-X" SET DEBUG=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/Z" SET COMMANDPREFIX=ECHO.&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-Z" SET COMMANDPREFIX=ECHO.&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/?" SET HELP=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/?" SET HELP=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/V" SET VERBOSE=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/V" SET VERBOSE=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/T" SET TARGET=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-T" SET TARGET=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+
+IF "%~1" == "" GOTO :VALIDATE
+
+:POSITIONAL
+SET /A ARGPOS+=1
+IF %ARGPOS% EQU 1 SET FILENAME=%~1&&SHIFT&&GOTO :PARSE
+
+SET PATTERNS=%PATTERNS% %~1
+SHIFT
+GOTO :PARSE
+
+
+:VALIDATE
+IF "%FILENAME%" == "" (
+  CALL :USAGE
+  CALL :ERROR "No filename specified"
+  GOTO :EOF
+)
+
+IF NOT "%TARGET%" == "" SET ADDITIONAL=%ADDITIONAL% -C "%TARGET%"
+IF "%VERBOSE%" == "Y" SET ADDITIONAL=%ADDITIONAL% -v
+
+:GO
+@IF "%DEBUG%" == "Y" @ECHO ON
+%COMMANDPREFIX%tar -xf %FILENAME% %ADDITIONAL% %PATTERNS%
+@IF "%DEBUG%" == "Y" @ECHO OFF
+  
+GOTO :EOF
+
+
+:USAGE
+ECHO.%SCRIPTNAME% - Unzip a file to a location
+ECHO.
+ECHO.Usage: %SCRIPTNAME% [filename] { [options] }
+ECHO.
+ECHO.Options:
+ECHO. -T [folder]  - Specify the target folder for extracted files
+ECHO. -V           - Turn on Verbose mode (Default: %VERBOSE%)  
+ECHO. -X           - Turn on Debug mode (Default: %DEBUG%)
+ECHO. -?           - Show Help / Usage
+GOTO :EOF
+
+
+:ERROR
+ECHO.
+ECHO.ERROR: %*
+GOTO :EOF
