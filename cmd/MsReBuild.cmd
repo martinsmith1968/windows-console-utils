@@ -1,0 +1,109 @@
+@ECHO OFF
+
+SETLOCAL
+
+SET SCRIPTPATH=%~dp0
+SET SCRIPTNAME=%~n0
+SET SCRIPTFULLFILENAME=%~dpnx0
+
+FOR %%* IN (.) DO SET CURRENTDIR=%%~dpn*
+FOR %%* IN (.) DO SET CURRENTDIRNAME=%%~n*
+
+SET TARGET=Clean,Build
+SET CONFIGURATION=Debug
+SET PLATFORM=
+SET DEBUG=N
+
+
+:PARSEARGS
+SET SHIFTBY=0
+IF /I "%~1" == "/T" (
+    SET TARGET=%~2
+    SET SHIFTBY=2
+)
+IF /I "%~1" == "/C" (
+    SET CONFIGURATION=%~2
+    SET SHIFTBY=2
+)
+IF /I "%~1" == "/P" (
+    SET PLATFORM=%~2
+    SET SHIFTBY=2
+)
+IF /I "%~1" == "/X" (
+    SET DEBUG=Y
+    SET SHIFTBY=1
+)
+
+IF %SHIFTBY% GTR 0 (
+    FOR /L %%N IN (1,1,%SHIFTBY%) DO SHIFT
+    GOTO :PARSEARGS
+)
+
+SET SOLUTIONNAME=%~1
+SET SOLUTIONCOUNT=1
+
+IF "%SOLUTIONNAME%" == "" (
+    CALL :LOCATESOLUTION
+) ELSE IF NOT EXIST "%SOLUTIONNAME%" (
+    CALL :LOCATESOLUTION
+) ELSE (
+    SHIFT
+)
+
+IF "%SOLUTIONNAME%" == "" (
+    CALL :USAGE
+    IF %SOLUTIONCOUNT% GTR 0 (
+        ECHO.
+        ECHO.Available Solutions:
+        ECHO.
+        DIR /B *.sln
+    )
+    GOTO :EOF
+)
+
+
+
+:BUILDPROPERTIES
+SET PROPERTIES=/p:Configuration=%CONFIGURATION%
+
+IF NOT "%PLATFORM%" == "" SET PROPERTIES=%PROPERTIES%;Platform="%PLATFORM%"
+
+
+:GO
+ECHO.MSBUILD "%SOLUTIONNAME%" /t:%TARGET% %PROPERTIES%
+
+IF "%DEBUG%" == "Y" GOTO :EOF
+
+MSBUILD "%SOLUTIONNAME%" /t:%TARGET% %PROPERTIES%
+
+GOTO :EOF
+
+
+:USAGE
+ECHO.%SCRIPTNAME% - MsBuild Helper
+ECHO.
+ECHO.%SCRIPTNAME% [solution-name] [OPTIONS]
+ECHO.
+ECHO.OPTIONS:
+ECHO./T [target]        Build Target. E.g. /T Build (Default: %TARGET%)
+ECHO./C [configuration] Build Configuration. E.g. /C Release (Default: %CONFIGURATION%)
+ECHO./P [platform]      Platform. E.g. x64 (Default: %PLATFORM%)
+ECHO./X                 Debug - don't run MSBUILD
+
+GOTO :EOF
+
+
+:LOCATESOLUTION
+SET SOLUTIONNAME=
+SET SOLUTIONCOUNT=0
+
+FOR %%F IN (%CURRENTDIR%\*.sln) DO (
+    SET /A SOLUTIONCOUNT+=1
+    SET SOLUTIONNAME=%%~F
+)
+
+IF %SOLUTIONCOUNT% GTR 1 (
+    SET SOLUTIONNAME=
+)
+
+GOTO :EOF

@@ -1,0 +1,34 @@
+File Types
+==========
+Source Code
+- *.cs;*.js;*.css;*.html;*.cpp;*.h;*.hpp;*.h;*.py;*.ts;*.sql
+- Sky Blue
+
+Executables
+- *.exe;*.msi;*.vsix;*.dll
+- Red
+
+Scripts
+- *.cmd;*.bat;*.sh;*.ps1
+- $00004080
+
+Compressed Archives
+- *.zip;*.rar;*.7z;*,iso;*.gz
+- $000080FF
+
+Documents
+- *.doc*;*.xls*;*.rtf   ;*.ppt*
+- Aqua
+
+PDF Documents
+- *.pdf
+- Fuchsia
+
+Read Only Files
+- *
+- *r*
+- Gray
+
+Images
+- *.png;*.jp*g;*.webp
+- Green

@@ -1,0 +1,24 @@
+macros=doskey /macros $*
+l=ls --color=auto $*
+ll=ls -l --color=auto $*
+la=ls -la --color=auto $*
+d=dir /ogen $*
+t=titl N $*
+ps=pwsh $*
+ps2=powershell $*
+dbc=doublecmd $*
+dk=docker $*
+dkc=docker-compose $*
+krak=kraken $*
+q=exit
+f=fav $*
+k=kubectl $*
+py=python $*
+vpip=python -m pip $*
+loge=LogExpert $*
+kc=kubectl $*
+ct=ConTEXT $*
+g=go $*
+ups=PwRunner.cmd $*
+upy=PyRunner.cmd $*
+ce=ConEmu $*

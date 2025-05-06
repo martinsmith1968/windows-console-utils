@@ -1,0 +1,39 @@
+{
+  "Version": 1,
+  "FileName": "Purplebricks.calendarset",
+  "FullFileName": "C:\\utils\\Data\\QuickCalendar\\Purplebricks.calendarset",
+  "Description": "A Calendar of Sprint Dates",
+  "DisplayFontName": "Segoe UI",
+  "DisplayFontSize": 9.0,
+  "MinimumDate": "1753-01-01T00:00:00",
+  "MaximumDate": "9998-12-31T00:00:00",
+  "DateDisplayFormat": "yyyy-MM-dd",
+  "VisualDetails": {
+    "ShowWeekNumbers": true,
+    "ShowToday": true,
+    "ShowTodayCircle": true,
+    "FirstDayOfWeek": "Monday",
+    "VisibleDimensions": "4, 3",
+    "FirstVisibleMonth": 1,
+    "WindowStartLocation": "Manual",
+    "ManualWindowLocation": "3079, 224"
+  },
+  "Dates": {
+    "DatesGenerators": [
+      {
+        "StartDate": "2025-01-29T00:00:00",
+        "EndDate": "2026-12-31T00:00:00",
+        "IntervalPeriod": {
+          "Value": 14,
+          "IntervalPeriodType": "Days"
+        },
+        "SequenceStart": 3,
+        "SequenceIncrement": 1,
+        "GeneratorTypeName": "StartDateEndDate",
+        "DescriptionTemplate": "Q1 S{sequence:0} {yyyy}"
+      }
+    ],
+    "MonthlyDatesGenerators": [],
+    "AnnualDatesGenerators": []
+  }
+}

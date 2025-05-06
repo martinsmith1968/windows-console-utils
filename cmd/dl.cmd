@@ -1,0 +1,41 @@
+@ECHO OFF
+
+SETLOCAL
+
+SET SCRIPTPATH=%~dp0
+SET SCRIPTNAME=%~n0
+SET SCRIPTFULLFILENAME=%~dpnx0
+
+IF "%~1" == "" (
+  CALL :USAGE
+  GOTO :EOF
+)
+
+SET URL=%~1
+SET FILENAME=%~2
+SET OPTIONS=%~3
+
+IF "%OPTIONS%" == "" SET OPTIONS=--no-use-server-timestamps --no-clobber
+
+IF "%FILENAME%" == "" SET FILENAME=%~nx1
+IF "%FILENAME%" == "" SET FILENAME=%DATE%-%TIME%
+
+SET URL=%URL:https=http%
+SET FILENAME=%FILENAME:/=%
+SET FILENAME=%FILENAME::=%
+
+ECHO.Downloading: %URL% to %FILENAME%
+WGET %OPTIONS% -O "%FILENAME%" "%URL%"
+SET RC=%ERRORLEVEL%
+
+EXIT /B %RC%
+
+GOTO :EOF
+
+
+:USAGE
+ECHO.%SCRIPTNAME% - Download a url as a file
+ECHO.
+ECHO.%SCRIPTNAME% [url] { [filename] }
+
+GOTO :EOF

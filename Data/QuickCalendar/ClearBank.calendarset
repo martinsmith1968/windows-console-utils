@@ -1,0 +1,87 @@
+{
+  "Version": 1,
+  "FileName": "ClearBank.calendarset",
+  "FullFileName": "C:\\Utils\\Data\\ClearBank.calendarset",
+  "Description": "A Calendar of Sprint Dates",
+  "DisplayFontName": "Segoe UI",
+  "DisplayFontSize": 9.0,
+  "MinimumDate": "1753-01-01T00:00:00",
+  "MaximumDate": "9998-12-31T00:00:00",
+  "DateDisplayFormat": "yyyy-MM-dd",
+  "VisualDetails": {
+    "ShowWeekNumbers": true,
+    "ShowToday": true,
+    "ShowTodayCircle": true,
+    "FirstDayOfWeek": "Monday",
+    "VisibleDimensions": "4, 3",
+    "FirstVisibleMonth": 1,
+    "WindowStartLocation": "Manual",
+    "ManualWindowLocation": "800, 360"
+  },
+  "Dates": {
+    "DatesGenerators": [
+      {
+        "StartDate": "2022-01-12T00:00:00",
+        "EndDate": "2022-12-31T00:00:00",
+        "IntervalPeriod": {
+          "Value": 14,
+          "IntervalPeriodType": "Days"
+        },
+        "GeneratorTypeName": "StartDateEndDate",
+        "DescriptionTemplate": "Sprint {yyyy.MM.dd}"
+      },
+      {
+        "StartDate": "2023-01-11T00:00:00",
+        "EndDate": "2023-12-31T00:00:00",
+        "IntervalPeriod": {
+          "Value": 14,
+          "IntervalPeriodType": "Days"
+        },
+        "GeneratorTypeName": "StartDateEndDate",
+        "DescriptionTemplate": "Sprint {yyyy}.{sequence:00}"
+      },
+      {
+        "StartDate": "2024-01-10T00:00:00",
+        "EndDate": "2024-12-31T00:00:00",
+        "IntervalPeriod": {
+          "Value": 14,
+          "IntervalPeriodType": "Days"
+        },
+        "GeneratorTypeName": "StartDateEndDate",
+        "DescriptionTemplate": "Sprint {yyyy}.{sequence:00}"
+      },
+      {
+        "StartDate": "2025-01-08T00:00:00",
+        "EndDate": "2025-12-31T00:00:00",
+        "IntervalPeriod": {
+          "Value": 14,
+          "IntervalPeriodType": "Days"
+        },
+        "GeneratorTypeName": "StartDateEndDate",
+        "DescriptionTemplate": "Sprint {yyyy}.{sequence:00}"
+      },
+      {
+        "StartDate": "2026-01-07T00:00:00",
+        "EndDate": "2026-12-31T00:00:00",
+        "IntervalPeriod": {
+          "Value": 14,
+          "IntervalPeriodType": "Days"
+        },
+        "GeneratorTypeName": "StartDateEndDate",
+        "DescriptionTemplate": "Sprint {yyyy}.{sequence:00}"
+      },
+      {
+        "StartDate": "2027-01-06T00:00:00",
+        "EndDate": "2027-12-31T00:00:00",
+        "IntervalPeriod": {
+          "Value": 14,
+          "IntervalPeriodType": "Days"
+        },
+        "GeneratorTypeName": "StartDateEndDate",
+        "DescriptionTemplate": "Sprint {yyyy}.{sequence:00}"
+      }
+    ],
+    "MonthlyDatesGenerators": [],
+    "AnnualDatesGenerators": []
+  }
+}
