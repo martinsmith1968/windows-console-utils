@@ -1,0 +1,15 @@
+@ECHO OFF
+
+SETLOCAL EnableDelayedExpansion
+
+PUSHD "%dp0"
+
+SET APPNAME=BudgeCursor
+SET APPDESCRIPTION=Budges the cursor when it gets stuck
+SET APPFILENAME=%APPNAME%.ahk
+SET EXEFILENAME=%APPNAME%.exe
+SET ICONFILENAME=icon\ClickFix-icon.ico
+
+CALL ..\BuildAHK.cmd "%~n0" "%APPNAME%" "%APPDESCRIPTION%" "%APPFILENAME%" "%EXEFILENAME%" "%ICONFILENAME%"
+
+POPD
