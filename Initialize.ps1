@@ -17,11 +17,45 @@ param (
     [string]$command = "install"
    ,[string]$targetFolder = "c:\utils"
    ,[string]$osType = "Any"
-   ,[bool]$modifyPath = $true
-   ,[bool]$dryRun = $false
-   ,[bool]$verbose = $true
-   ,[bool]$debug = $true
+   ,[string[]]$groups = @( "Mandatory", "Standard", "Essentials", "Developer" )
+   ,[switch][bool]$noModifyPath = $false
+   ,[switch][bool]$dryRun = $false
+   ,[switch][bool]$quiet = $false
+   ,[switch][bool]$debug = $false
 )
+
+$modifyPath = !$noModifyPath
+$verbose = !$quiet
+
+$doNothing = $false
+$doNothing = $true
+
+if ($debug) {
+    Write-Host "----------------------------------------"
+    Write-Host "command:      $command"
+    Write-Host "targetFolder: $targetFolder"
+    Write-Host "osType:       $osType"
+    Write-Host "groups:       $groups"
+    Write-Host "modifyPath:   $modifyPath"
+    Write-Host "dryRun:       $dryRun"
+    Write-Host "verbose:      $verbose"
+    Write-Host "debug:        $debug"
+
+    if ($groups.Count -gt 0) {
+        Write-Host "----------------------------------------"
+        $groupCount = 0
+        foreach($group in $groups) {
+            ++$groupCount
+            Write-Host "Group ${groupCount}: $group"
+        }
+    }
+    Write-Host "----------------------------------------"
+}
+
+if ($doNothing) {
+    return
+}
+
 
 ################################################################################
 # TODO:
@@ -513,7 +547,7 @@ $defined_apps = @(
     ,[AppDefinition]::new("HotKey Detective",               "System",     [OSType]::x64, "apps-win\ITachiLab\hotkey-detective",                      "hotkey-detective*.zip",   "win\nirsoft",              [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ), [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ExtractWildcard = "x64\*" ; [InstallParameter]::ShortcutFilenames = "hotkey*.exe=Hot Key Detective" }) ))
     ,[AppDefinition]::new("AlomWare Toolbox",               "System",     [OSType]::Any, "apps-win\Alomware",                                        "Toolbox*.zip",            "win\Toolbox",              [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ), [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ShortcutFilenames = "Toolbox*.exe=AlomWare Toolbox" }) ))
 
-    ,[AppDefinition]::new("Login Script",                   "Essential",  [OSType]::Any, "",                                                         "Login.cmd",               "",                         [InstallType]::None, @{ [InstallParameter]::ShortcutFilenames = "Login.cmd=Login Script" ; [InstallParameter]::ShortcutTarget = "shell:startup" })
+    ,[AppDefinition]::new("Login Script",                   "Essentials", [OSType]::Any, "",                                                         "Login.cmd",               "",                         [InstallType]::None, @{ [InstallParameter]::ShortcutFilenames = "Login.cmd=Login Script" ; [InstallParameter]::ShortcutTarget = "shell:startup" })
 )
 
 
@@ -551,9 +585,16 @@ $index = 0
 Write-Log "** Filtering: $($defined_apps.Count) apps"
 foreach($defined_app in $defined_apps) {
     $index++
+
     $include = $False
+
     if ($defined_app.OSType -eq $osType -or $defined_app.OSType -eq [OSType]::Any) {
         $include = $True
+    }
+    if ($include) {
+        if (-Not $groups.Contains($defined_app.Group)) {
+            $include = $False
+        }
     }
 
     if ($include) {
@@ -574,7 +615,11 @@ foreach($app in $install_apps) {
     Write-Log $bannerLine
     Write-Log "-- ${index}: $($app.Id)"
 
-    $app.Install($targetFolder, $verbose, $debug)
+    if ($dryRun) {
+        Write-Log "-- DRY RUN: $($app.Id) --> $($app.TargetPath)"
+    } else {
+        $app.Install($targetFolder, $verbose, $debug)
+    }
 }
 
 # Modify PATH
