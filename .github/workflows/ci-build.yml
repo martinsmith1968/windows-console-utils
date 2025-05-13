@@ -1,0 +1,222 @@
+name: CI Build
+run-name: CIBuild_${{ github.event_name }}_${{ github.ref_name }}_${{ github.run_number }}.${{ github.run_attempt }}
+
+env:
+  PRIMARY_BRANCH_NAME: main
+  PRODUCT_MAJOR_VERSION: 2.0
+  PROJECT_NAME: windows-console-utils
+
+on:
+  push:
+    branches:
+      - main
+      - feature/**
+      - task/**
+      - spike/**
+
+  pull_request:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+jobs:
+  ##########################################################
+  ## Pipeline Configuration and Setup
+  setup:
+    name: Setup Pipeline
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Get Current Build Date
+      run: |
+        echo "build_date=$(date +'%y%j')" >> $GITHUB_ENV
+        echo "build_year=$(date +'%Y')" >> $GITHUB_ENV
+
+    - name: Evaluate pipeline conditions
+      run: |
+        is_primary_branch=false
+        is_pull_request_build=false
+        is_release_candidate_branch=false
+
+        # Primary Branch ?
+        if [ "${{ github.ref }}" == 'refs/heads/${{ env.PRIMARY_BRANCH_NAME }}' ]
+        then
+          is_primary_branch=true
+        fi
+
+        # Pull Request ?
+        if [ "${{ github.event_name }}" == "pull_request" ]
+        then
+          is_pull_request_build=true
+        fi
+
+        # If Release Candidate branch ?
+        if [[ "${{ github.ref }}" == refs/heads/${{ env.BRANCH_PREFIX_RELEASE_CANDIDATE }}* ]]
+        then
+          is_release_candidate_branch=true
+        fi
+
+        # Set for later steps
+        echo "is_primary_branch=${is_primary_branch}" >> $GITHUB_ENV
+        echo "is_pull_request_build=${is_pull_request_build}" >> $GITHUB_ENV
+        echo "is_release_candidate_branch=${is_release_candidate_branch}" >> $GITHUB_ENV
+
+    - name: Determine Tagging
+      run: |
+        should_tag=false
+
+        if $is_primary_branch
+        then
+            should_tag=true
+        fi
+
+        echo "should_tag=${should_tag}" >> $GITHUB_ENV
+
+    - name: Determine GitHub Releasing
+      run: |
+        should_release=true
+        release_is_draft=true
+        release_is_prerelease=false
+        release_modifier='-ci'
+        changelog_mode='commit'
+
+        if $is_primary_branch
+        then
+            release_is_draft=false
+            release_is_prerelease=false
+            release_modifier=''
+        fi
+        if $is_release_candidate_branch
+        then
+            release_modifier='-alpha'
+        fi
+        if $is_pull_request_build; then
+            release_is_draft=false
+            release_is_prerelease=true
+            release_modifier='-beta'
+            changelog_mode='pr'
+        fi
+
+        echo "should_release=${should_release}" >> $GITHUB_ENV
+        echo "release_is_draft=${release_is_draft}" >> $GITHUB_ENV
+        echo "release_is_prerelease=${release_is_prerelease}" >> $GITHUB_ENV
+        echo "release_modifier=${release_modifier}" >> $GITHUB_ENV
+        echo "changelog_mode=${changelog_mode}" >> $GITHUB_ENV
+
+    - name: Set Product Version
+      run: echo "product_version=${{ env.PRODUCT_MAJOR_VERSION }}" >> $GITHUB_ENV
+
+    - name: Set Executable Version
+      run: echo "executable_version=${{ env.PRODUCT_MAJOR_VERSION }}.${{ env.build_date }}.${{ github.run_number }}${{ github.run_attempt }}${{ env.release_modifier }}" >> $GITHUB_ENV
+
+    - name: Show Configuration
+      run: env | sort
+
+    outputs:
+      build_date: ${{ env.build_date }}
+      build_year: ${{ env.build_year }}
+      executable_version: ${{ env.executable_version }}
+      product_version: ${{ env.product_version }}
+      should_tag: ${{ env.should_tag }}
+      should_release: ${{ env.should_release }}
+      release_is_draft: ${{ env.release_is_draft }}
+      release_is_prerelease: ${{ env.release_is_prerelease }}
+      release_modifier: ${{ env.release_modifier }}
+      changelog_mode: ${{ env.changelog_mode }}
+
+
+  ##########################################################
+  ## Install and Verify
+  install-windows:
+    strategy:
+      matrix:
+        group: [ 'Standard' ]
+        osType: [ 'x64', 'x32', 'Any' ]
+
+    name: Install - ${{ matrix.group }} - ${{ matrix.osType }}
+    needs: setup
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Install
+      shell: pwsh
+      run: |
+        $targetFolder = Join-Path "${{ github.workspace }}" "${{ matrix.group }}" "${{ matrix.osType }}"
+
+        Write-Host "**********************************************************************"
+        Write-Host "** Installing Windows Console Utils"
+        Write-Host "** Group        : ${{ matrix.group }}"
+        Write-Host "** OsType       : ${{ matrix.osType }}"
+        Write-Host "** TargetFolder : ${targetFolder}"
+        #Install-Utils -TargetFolder "" -OsType "${{ matrix.osType }}" -Group "${{ matrix.group }}"
+
+
+
+  ##########################################################
+  ## Tag in git
+  tag:
+    name: Tag in GitHub
+    if: needs.setup.outputs.should_tag == 'true'
+
+    needs:
+      - setup
+      - install-windows
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Tag git
+      uses: pkgdeps/git-tag-action@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        github_repo: ${{ github.repository }}
+        git_commit_sha: ${{ github.sha }}
+        git_tag_prefix: "v"
+        version: ${{ needs.setup.outputs.executable_version }}
+
+
+  ##########################################################
+  ## Generate a GitHub Release
+  release:
+    name: Create GitHub Release
+    if: needs.setup.outputs.should_release == 'true'
+
+    needs:
+      - setup
+      - install-windows
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - uses: actions/download-artifact@v4
+      with:
+        name: build_output
+        path: build
+
+    - name: Build Changelog
+      uses: mikepenz/release-changelog-builder-action@v5
+      with:
+        mode: ${{ needs.setup.outputs.changelog_mode }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Create Release
+      uses: ncipollo/release-action@v1
+      with:
+        tag: v${{ needs.setup.outputs.executable_version }}
+        name: Release ${{ needs.setup.outputs.executable_version }}
+        body: ${{ steps.build_changelog.outputs.changelog }}
+        draft: ${{ needs.setup.outputs.release_is_draft }}
+        prerelease: ${{ needs.setup.outputs.release_is_prerelease }}
+        removeArtifacts: true
+        artifacts: '**/*.zip'
