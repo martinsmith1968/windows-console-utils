@@ -5,6 +5,7 @@ env:
   PRIMARY_BRANCH_NAME: main
   PRODUCT_MAJOR_VERSION: 2.0
   PROJECT_NAME: windows-console-utils
+  BUILD_OUTPUTFOLDER: Output
 
 on:
   push:
@@ -146,15 +147,22 @@ jobs:
     - name: Install
       shell: pwsh
       run: |
-        $targetFolder = Join-Path "${{ github.workspace }}" "${{ matrix.group }}" "${{ matrix.osType }}"
+        $targetFolder = Join-Path "${{ github.workspace }}" "Install" "${{ matrix.group }}" "${{ matrix.osType }}"
 
         Write-Host "**********************************************************************"
         Write-Host "** Installing Windows Console Utils"
         Write-Host "** Group        : ${{ matrix.group }}"
         Write-Host "** OsType       : ${{ matrix.osType }}"
         Write-Host "** TargetFolder : ${targetFolder}"
-        #Install-Utils -TargetFolder "" -OsType "${{ matrix.osType }}" -Group "${{ matrix.group }}"
 
+        ./Install-Utils.ps1 -TargetFolder $targetFolder -OsType "${{ matrix.osType }}" -Group "${{ matrix.group }}"
+
+    - name: Upload Build Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: build_output
+        path: ${{ env.BUILD_OUTPUTFOLDER }}\\*.zip
+        if-no-files-found: error
 
 
   ##########################################################
