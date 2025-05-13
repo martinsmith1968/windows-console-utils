@@ -7,8 +7,8 @@
 .PARAMETER 
 .EXAMPLE
     C:\PS>
-    utils list              -- Show the defined services
-    utils install           -- Install services
+    Install-Utils list              -- Show the defined services
+    Install-Utils install           -- Install services
 .NOTES
     Author: Martin Smith
     Date:   2024-01-04
@@ -26,9 +26,6 @@ param (
 
 $modifyPath = !$noModifyPath
 $verbose = !$quiet
-
-$doNothing = $false
-$doNothing = $true
 
 if ($debug) {
     Write-Host "----------------------------------------"
@@ -50,10 +47,6 @@ if ($debug) {
         }
     }
     Write-Host "----------------------------------------"
-}
-
-if ($doNothing) {
-    return
 }
 
 
