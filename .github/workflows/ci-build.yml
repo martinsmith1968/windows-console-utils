@@ -133,6 +133,7 @@ jobs:
   install-windows:
     strategy:
       matrix:
+        #group: [ 'Standard', 'Essentials', 'Developer' ]
         group: [ 'Standard' ]
         osType: [ 'x64', 'x32', 'Any' ]
 
@@ -157,11 +158,16 @@ jobs:
 
         ./Install-Utils.ps1 -TargetFolder $targetFolder -OsType "${{ matrix.osType }}" -Group "${{ matrix.group }}"
 
+        $output_folder = Join-Path "${{ github.workspace }}" "${{ env.BUILD_OUTPUTFOLDER }}"
+        Copy-Item *.log -Destination $output_folder -Force
+
     - name: Upload Build Artifact
       uses: actions/upload-artifact@v4
       with:
         name: build_output
-        path: ${{ env.BUILD_OUTPUTFOLDER }}\\*.zip
+        path: |
+          ${{ env.BUILD_OUTPUTFOLDER }}\\*.zip
+          ${{ env.BUILD_OUTPUTFOLDER }}\\*.log
         if-no-files-found: error
 
 
