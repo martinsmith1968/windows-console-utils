@@ -9,7 +9,19 @@ SET SCRIPTFULLFILENAME=%~dpnx0
 FOR %%* IN (.) DO SET CURRENTDIR=%%~dpn*
 FOR %%* IN (.) DO SET CURRENTDIRNAME=%%~n*
 
+SET REPO_CONFIG_FILENAME=.git.config.toml
+
 SET I=0
+
+SET /A I+=1
+SET COMMAND[%I%].NAME=clone
+SET COMMAND[%I%].LABEL=CLONE
+SET COMMAND[%I%].DESC=Clone a Repo
+
+SET /A I+=1
+SET COMMAND[%I%].NAME=baseurl
+SET COMMAND[%I%].LABEL=BASEURL
+SET COMMAND[%I%].DESC=Set the Base URL for repos in this folder
 
 SET /A I+=1
 SET COMMAND[%I%].NAME=status
@@ -151,6 +163,35 @@ FOR /L %%F IN (1,1,%COUNT%) DO (
 
     ECHO.!NAME! - !DESC!
 )
+
+GOTO :EOF
+
+
+:CLONE
+CALL GetTOMLValue.cmd ".BaseUrl" -f %REPO_CONFIG_FILENAME%
+
+SET SOURCE=%~2
+IF /I "%SOURCE:~1,7%" == "http://" (
+    ECHO.Using source : %SOURCE%
+) ELSE IF /I "%SOURCE:~1,8%" == "https://" (
+    ECHO.Using source : %SOURCE%
+) ELSE (
+    SET SOURCE=%TOMLVALUE%%SOURCE%
+    ECHO.Using source %TOMLVALUE%%SOURCE%
+)
+
+GIT clone %SOURCE%
+GOTO :EOF
+
+
+:BASEURL
+IF "%~2" == "" (
+    CALL :ERROR Invalid Base URL
+    GOTO :EOF
+)
+
+ECHO.BaseUrl = %~2> %REPO_CONFIG_FILENAME%
+TYPE %REPO_CONFIG_FILENAME%
 
 GOTO :EOF
 
