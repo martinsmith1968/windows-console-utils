@@ -159,7 +159,7 @@ jobs:
         ./Install-Utils.ps1 -TargetFolder $targetFolder -OsType "${{ matrix.osType }}" -Groups "${{ matrix.group }}"
 
         $output_folder = Join-Path "${{ github.workspace }}" "${{ env.BUILD_OUTPUTFOLDER }}"
-        Copy-Item *.log -Destination $output_folder -Force
+        Copy-Item *.log -Destination $output_folder -Force -Verbose
 
     - name: Upload Build Artifact
       uses: actions/upload-artifact@v4
