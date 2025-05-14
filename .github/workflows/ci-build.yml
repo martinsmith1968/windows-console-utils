@@ -171,7 +171,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         # TODO: *.zip
-        name: build_output
+        name: build_log_${{ matrix.group }}_${{ matrix.osType }}
         path: |
           ${{ env.BUILD_OUTPUTFOLDER }}\\*.log
         if-no-files-found: error
