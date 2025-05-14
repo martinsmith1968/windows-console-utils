@@ -480,7 +480,7 @@ $bannerPartLine = [string]::new('-', 40)
 $defined_apps = @(
     # Command Line Apps
      [AppDefinition]::new("7za command",                    "Mandatory",  [OSType]::Any, "apps\7zip\x64",                                            "*.exe",                   "bin",                      [InstallType]::CopyFiles)
-    ,[AppDefinition]::new("OptimumX Console Apps",          "Mandatory",  [OSType]::x64, "apps\OptimumX",                                            "*.zip",                   "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ))
+    ,[AppDefinition]::new("OptimumX Console Apps",          "Mandatory",  [OSType]::Any, "apps\OptimumX",                                            "*.zip",                   "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ))
     ,[AppDefinition]::new("My Native Console Apps",         "Essentials", [OSType]::x64, "apps\martinsmith1968\NativeWindowsConsoleApplicationsCPP", "*.zip",                   "msbin",                    [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ))
     ,[AppDefinition]::new("My Legacy Console Apps",         "Essentials", [OSType]::Any, "apps\martinsmith1968\legacy",                              "*.*",                     "msbin",                    [InstallType]::CopyFiles)
     ,[AppDefinition]::new("GnuWin32",                       "Standard",   [OSType]::Any, "apps\GnuWin32",                                            "*.zip",                   "",                         [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractWildcard = "gnuwin32\*.*" ; [InstallParameter]::ExtractCustomArguments = "-r" })
