@@ -585,7 +585,7 @@ foreach($defined_app in $defined_apps) {
         $include = $True
     }
     if ($include) {
-        if (-Not $groups.Contains($defined_app.Group)) {
+        if (-Not $groups.Contains($defined_app.GroupName)) {
             $include = $False
         }
     }
