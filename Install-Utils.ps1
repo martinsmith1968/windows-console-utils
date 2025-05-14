@@ -447,7 +447,7 @@ class AppDefinition{
                 if ([string]::IsNullOrEmpty($shortcutPath)) {
                     $shortcutPath = $($shellFolders.Values)[0]
                 }
-                New-Folder $shortcutPath
+                New-FolderIfNotExists $shortcutPath
 
                 $shortcutTargets = ($this.Parameters[[InstallParameter]::ShortcutFilenames]).Split("|")
                 foreach($shortcutTarget in $shortcutTargets) {
