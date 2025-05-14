@@ -145,6 +145,12 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
+    - name: Prepare
+      shell: pwsh
+      run: |
+        $output_folder = Join-Path "${{ github.workspace }}" "${{ env.BUILD_OUTPUTFOLDER }}"
+        New-Item -Path $output_folder -ItemType Directory -Force
+
     - name: Install
       shell: pwsh
       run: |
