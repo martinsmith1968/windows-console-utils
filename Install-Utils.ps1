@@ -296,8 +296,8 @@ class AppDefinition{
     ) {
         $sourcePath = Join-Path -Path $PSScriptRoot -ChildPath $this.SourceFolder
         $targetPath = Join-Path -Path $baseTargetFolder -ChildPath $this.TargetFolder
-        Write-Log "-- Source : ${sourcePath}"
-        Write-Log "-- Target : ${targetPath}"
+        Write-Log "-- Source      : ${sourcePath}"
+        Write-Log "-- Target      : ${targetPath}"
         Write-Log "-- InstallType : $($this.InstallType)"
 
         New-FolderIfNotExists $targetPath
@@ -520,7 +520,7 @@ $defined_apps = @(
 
     # Wndows Apps
     ,[AppDefinition]::new("Window Extensions",              "Standard",   [OSType]::Any, "apps-win\martinsmith1968\WindowExtensions",                "*.zip",                   "mswin\WindowExtensions",   [InstallType]::ExtractZip, @{ [InstallParameter]::ShortcutFilenames = "WindowExtensions.exe=Window Extensions" ; [InstallParameter]::ShortcutTarget = "shell:startup" })
-    ,[AppDefinition]::new("QuickCalendar",                  "Standard",   [OSType]::Any, "apps-win\martinsmith1968\QuickCalendar",                   "*.zip",                   "mswin\QuickCalendar",      [InstallType]::ExtractZip, @{ [InstallParameter]::ShortcutFilenames = "QuickCalendar.exe=Quick Calendar" ; [InstallParameter]::ShortcutTarget = "shell:startup" })
+    ,[AppDefinition]::new("WinFormsApplications",           "Standard",   [OSType]::Any, "apps-win\martinsmith1968\WinFormsApplications",            "*.zip",                   "mswin",                    [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ShortcutFilenames = "QuickCalendar.exe=Quick Calendar" ; [InstallParameter]::ShortcutTarget = "shell:startup" })
     ,[AppDefinition]::new("Metapad",                        "Standard",   [OSType]::Any, "apps-win\metapad",                                         "*.zip",                   "win",                      [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu(@{ [InstallParameter]::ShortcutFilenames = "metapad.exe=Metapad" }) ))
     ,[AppDefinition]::new("Notepad2",                       "Standard",   [OSType]::Any, "apps-win\notepad2",                                        "*.zip",                   "win",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameLicence ), @{ [InstallParameter]::ShortcutFilenames = "notepad2.exe=Notepad 2" ; [InstallParameter]::ShortcutTarget = "shell:startmenu" ; [InstallParameter]::ShortcutFolder = "utils" })
     ,[AppDefinition]::new("Notepad3",                       "Standard",   [OSType]::Any, "apps-win\notepad3",                                        "*.zip",                   "win\Notepad3",             [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu(@{ [InstallParameter]::ShortcutFilenames = "Notepad3.exe=Notepad 3" }) ))
