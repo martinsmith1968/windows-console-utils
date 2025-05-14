@@ -17,7 +17,7 @@ param (
     [string]$command            = "install"
    ,[string]$targetFolder       = "c:\utils"
    ,[string]$osType             = "Any"
-   ,[string[]]$groups           = @( "Mandatory", "Standard", "Essentials", "Developer" )
+   ,[string[]]$groups           = @( "Standard", "Essentials", "Developer" )
    ,[switch][bool]$noModifyPath = $false
    ,[switch][bool]$dryRun       = $false
    ,[switch][bool]$quiet        = $false
@@ -48,6 +48,7 @@ if ($debug) {
     }
     Write-Host "----------------------------------------"
 }
+$groups += "Mandatory"
 
 
 ################################################################################
