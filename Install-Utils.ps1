@@ -306,7 +306,7 @@ class AppDefinition{
         #------------------------------------------------------------------------------------------------------------------------
         # Pre-Process Actions
         #------------------------------------------------------------------------------------------------------------------------
-        if ($this.Actions.ContainsKey([InstallAction]::ClearTargetFolder)) {
+        if ($this.Actions.Contains([InstallAction]::ClearTargetFolder)) {
             Write-Log "-- Clear Target Folder: ${targetPath}"
             Remove-Item -Path $targetPath\* -Recurse -Force -Verbose:$verbose -ErrorAction SilentlyContinue
         }
