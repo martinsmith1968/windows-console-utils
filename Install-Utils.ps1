@@ -14,14 +14,14 @@
     Date:   2024-01-04
 #>
 param (
-    [string]$command = "install"
-   ,[string]$targetFolder = "c:\utils"
-   ,[string]$osType = "Any"
-   ,[string[]]$groups = @( "Mandatory", "Standard", "Essentials", "Developer" )
+    [string]$command            = "install"
+   ,[string]$targetFolder       = "c:\utils"
+   ,[string]$osType             = "Any"
+   ,[string[]]$groups           = @( "Mandatory", "Standard", "Essentials", "Developer" )
    ,[switch][bool]$noModifyPath = $false
-   ,[switch][bool]$dryRun = $false
-   ,[switch][bool]$quiet = $false
-   ,[switch][bool]$debug = $false
+   ,[switch][bool]$dryRun       = $false
+   ,[switch][bool]$quiet        = $false
+   ,[switch][bool]$debug        = $false
 )
 
 $modifyPath = !$noModifyPath
@@ -150,7 +150,7 @@ function New-FolderIfNotExists([string]$targetFolder) {
     }
 }
 
-function New-Process(
+function Invoke-ExecuteProcess(
     [string]$fileName
    ,[string]$arguments
    ,[bool]$verbose
