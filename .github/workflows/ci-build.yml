@@ -27,7 +27,6 @@ jobs:
   ## Pipeline Configuration and Setup
   setup:
     name: Setup Pipeline
-
     runs-on: ubuntu-latest
 
     steps:
@@ -134,7 +133,7 @@ jobs:
   build:
     name: Build
     needs: setup
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
     - name: Checkout
@@ -238,11 +237,9 @@ jobs:
   tag:
     name: Tag in GitHub
     if: needs.setup.outputs.should_tag == 'true'
-
     needs:
       - setup
       - install-windows
-
     runs-on: ubuntu-latest
 
     steps:
@@ -261,11 +258,9 @@ jobs:
   release:
     name: Create GitHub Release
     if: needs.setup.outputs.should_release == 'true'
-
     needs:
       - setup
       - install-windows
-
     runs-on: ubuntu-latest
 
     steps:
