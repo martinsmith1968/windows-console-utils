@@ -149,12 +149,12 @@ jobs:
         $output_file = Join-Path "${{ github.workspace }}" "${{ env.BUILD_OUTPUTFOLDER }}" "${{ env.build_output_filename }}"
         New-Item -Path "${{ github.workspace }}" -Name "${{ env.BUILD_OUTPUTFOLDER }}" -ItemType Directory -Force
 
-        $candidate_files = Get-ChildItem -Path "${{ github.workspace }}" -Recurse -Force -Include .git*
+        $candidate_files = Get-ChildItem -Path "${{ github.workspace }}" -Recurse -Force -Exclude .git*
 
         Write-Host "Compressing: $($candidate_files.Count) files"
-        #$candidate_files | ForEach-Object {
-        #  Write-Host "  $_.FullName"
-        #}
+        $candidate_files | ForEach-Object {
+          Write-Host "  $_.FullName"
+        }
         $candidate_files | Compress-Archive -DestinationPath $output_file -Force -CompressionLevel Optimal
 
     - name: Upload Build Artifact
