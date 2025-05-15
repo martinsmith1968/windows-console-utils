@@ -148,7 +148,7 @@ jobs:
       run: |
         $input_folder = "${{ github.workspace }}"
         $output_folder = Join-Path "${{ github.workspace }}" "${{ env.BUILD_OUTPUTFOLDER }}"
-        $output_file = Join-Path $outut_folder "${{ env.build_output_filename }}"
+        $output_file = Join-Path $output_folder "${{ env.build_output_filename }}"
         New-Item -Path "${{ github.workspace }}" -Name "${{ env.BUILD_OUTPUTFOLDER }}" -ItemType Directory -Force
 
 
