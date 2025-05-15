@@ -146,17 +146,38 @@ jobs:
     - name: Compress files
       shell: pwsh
       run: |
-        $output_file = Join-Path "${{ github.workspace }}" "${{ env.BUILD_OUTPUTFOLDER }}" "${{ env.build_output_filename }}"
+        $input_folder = "${{ github.workspace }}"
+        $output_folder = Join-Path "${{ github.workspace }}" "${{ env.BUILD_OUTPUTFOLDER }}"
+        $output_file = Join-Path $outut_folder "${{ env.build_output_filename }}"
         New-Item -Path "${{ github.workspace }}" -Name "${{ env.BUILD_OUTPUTFOLDER }}" -ItemType Directory -Force
 
-        $excludes = @( ".*/*", ".git*" )
-        $candidate_files = Get-ChildItem -Path "${{ github.workspace }}" -Recurse -Exclude $excludes
+
+
+        $folder_excludes = @( ".git", ".github", ".*", "bin", "win", "msbin", "mswin", "gnuwin32" )
+        $candidate_folders = Get-ChildItem -Path $input_folder -Attributes Directory -Exclude $folder_excludes
+        $candidate_folders = $candidate_folders | Where-Object { !(Test-Path (Join-Path $_.FullName ".gitkeep")) }
+
+        Write-Host "Scanning: $($candidate_folders.Count) folders"
+
+        $file_excludes = @( ".git*" )
+        $candidate_files = @()
+
+        $candidate_folders | ForEach-Object {
+            Write-Host "  Scanning: $_... " -NoNewline
+            $folder_files = Get-ChildItem -Path $_.FullName -Recurse -File -Exclude $file_excludes
+            Write-Host "  Found: $($folder_files.Count) files"
+
+            $candidate_files += $folder_files
+        }
 
         Write-Host "Compressing: $($candidate_files.Count) files"
-        $candidate_files | ForEach-Object {
-          Write-Host "  $_"
-        }
-        $candidate_files | Compress-Archive -DestinationPath $output_file -Force -CompressionLevel Optimal
+
+        Remove-Item $output_file -Force -ErrorAction SilentlyContinue
+
+        Write-Host "Compressing: to : $output_file"
+        $candidate_files | Compress-Archive -DestinationPath $output_file -CompressionLevel Optimal -Verbose
+
+        Get-ChildItem $output_file
 
     - name: Upload Build Artifact
       uses: actions/upload-artifact@v4
