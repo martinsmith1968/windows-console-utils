@@ -2,10 +2,12 @@ name: CI Build
 run-name: CIBuild_${{ github.event_name }}_${{ github.ref_name }}_${{ github.run_number }}.${{ github.run_attempt }}
 
 env:
-  PRIMARY_BRANCH_NAME: main
+  PRODUCT_NAME: windows-console-utils
   PRODUCT_MAJOR_VERSION: 2.0
-  PROJECT_NAME: windows-console-utils
+  PRIMARY_BRANCH_NAME: main
+  BUILD_STAGINGFOLDER: Staging
   BUILD_OUTPUTFOLDER: Output
+  INSTALL_LOGSFOLDER: Logs
 
 on:
   push:
@@ -129,6 +131,54 @@ jobs:
 
 
   ##########################################################
+  ## Build required files
+  build:
+    name: Build
+    needs: setup
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Set Build Output File Name
+      run: echo "build_output_filename=${{ env.PRODUCT_NAME }}.${{ env.executable_version}}.zip" >> $GITHUB_ENV
+
+    - name: Extract all required files
+      shell: pwsh
+      run: |
+        $staging_folder = Join-Path "${{ github.workspace }}" "${{ env.BUILD_STAGINGFOLDER }}"
+
+        Copy-Item -Path "${{ github.workspace }}" -Destination $staging_folder -Recurse -Force -Exclude ".git", ".github"
+    - name: Remove Unnecessary files
+      shell: pwsh
+      run: |
+        $staging_folder = Join-Path "${{ github.workspace }}" "${{ env.BUILD_STAGINGFOLDER }}"
+
+        $candidate_files = @()
+        $candidate_files += Get-ChildItem -Path $staging_folder -Recurse -Force -Include .git*
+
+        $candidate_files | ForEach-Object {
+          Write-Host "Removing file: $($_.FullName)"
+          Remove-Item -Path $_.FullName -Force
+        }
+
+    - name: Compress files
+      shell: pwsh
+      run: |
+        $staging_folder = Join-Path "${{ github.workspace }}" "${{ env.BUILD_STAGINGFOLDER }}"
+        $output_file = Join-Path "${{ github.workspace }}" "${{ env.BUILD_OUTPUTFOLDER }}" "${{ env.build_output_filename }}"
+        Compress-Archive -Path $staging_folder -DestinationPath $output_file -Force
+
+    - name: Upload Build Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: build_output
+        path: |
+          ${{ env.BUILD_OUTPUTFOLDER }}\\*.zip
+        if-no-files-found: error
+
+  ##########################################################
   ## Install and Verify
   install-windows:
     strategy:
@@ -138,7 +188,7 @@ jobs:
         osType: [ 'x64', 'x32', 'Any' ]
 
     name: Install - ${{ matrix.group }} - ${{ matrix.osType }}
-    needs: setup
+    needs: build
     runs-on: windows-latest
 
     steps:
@@ -148,10 +198,10 @@ jobs:
     - name: Prepare
       shell: pwsh
       run: |
-        $output_folder = Join-Path "${{ github.workspace }}" "${{ env.BUILD_OUTPUTFOLDER }}"
-        New-Item -Path $output_folder -ItemType Directory -Force
+        $logs_folder = Join-Path "${{ github.workspace }}" "${{ env.INSTALL_LOGSFOLDER }}"
+        New-Item -Path $logs_folder -ItemType Directory -Force
 
-    - name: Install
+    - name: Install Test
       shell: pwsh
       run: |
         $targetFolder = Join-Path "${{ github.workspace }}" "Install" "${{ matrix.group }}" "${{ matrix.osType }}"
@@ -164,8 +214,8 @@ jobs:
 
         ./Install-Utils.ps1 -TargetFolder $targetFolder -OsType "${{ matrix.osType }}" -Groups "${{ matrix.group }}"
 
-        $output_folder = Join-Path "${{ github.workspace }}" "${{ env.BUILD_OUTPUTFOLDER }}"
-        Copy-Item *.log -Destination $output_folder -Force -Verbose
+        $logs_folder = Join-Path "${{ github.workspace }}" "${{ env.INSTALL_LOGSFOLDER }}"
+        Copy-Item *.log -Destination $logs_folder -Force -Verbose
 
     - name: Upload Build Artifact
       uses: actions/upload-artifact@v4
@@ -173,7 +223,7 @@ jobs:
         # TODO: *.zip
         name: build_log_${{ matrix.group }}_${{ matrix.osType }}
         path: |
-          ${{ env.BUILD_OUTPUTFOLDER }}\\*.log
+          ${{ env.INSTALL_LOGSFOLDER }}\\*.log
         if-no-files-found: error
 
 
