@@ -183,8 +183,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: build_output
-        path: |
-          ${{ env.BUILD_OUTPUTFOLDER }}\\*.zip
+        path: ${{ env.BUILD_OUTPUTFOLDER }}
         if-no-files-found: error
 
   ##########################################################
