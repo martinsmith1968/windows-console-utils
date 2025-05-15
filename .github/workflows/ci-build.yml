@@ -3,7 +3,7 @@ run-name: CIBuild_${{ github.event_name }}_${{ github.ref_name }}_${{ github.run
 
 env:
   PRODUCT_NAME: windows-console-utils
-  PRODUCT_MAJOR_VERSION: 2.0
+  PRODUCT_MAJOR_VERSION: "2.0"
   PRIMARY_BRANCH_NAME: main
   BUILD_OUTPUTFOLDER: Output
   INSTALL_LOGSFOLDER: Logs
@@ -147,10 +147,14 @@ jobs:
       shell: pwsh
       run: |
         $output_file = Join-Path "${{ github.workspace }}" "${{ env.BUILD_OUTPUTFOLDER }}" "${{ env.build_output_filename }}"
+        New-Item -Path "${{ github.workspace }}" -Name "${{ env.BUILD_OUTPUTFOLDER }}" -ItemType Directory -Force
 
-        $candidate_files = Get-ChildItem -Path $staging_folder -Recurse -Force -Include .git*
+        $candidate_files = Get-ChildItem -Path "${{ github.workspace }}" -Recurse -Force -Include .git*
 
         Write-Host "Compressing: $($candidate_files.Count) files"
+        #$candidate_files | ForEach-Object {
+        #  Write-Host "  $_.FullName"
+        #}
         $candidate_files | Compress-Archive -DestinationPath $output_file -Force -CompressionLevel Optimal
 
     - name: Upload Build Artifact
