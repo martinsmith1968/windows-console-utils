@@ -149,9 +149,6 @@ jobs:
         $input_folder = "${{ github.workspace }}"
         $output_folder = Join-Path "${{ github.workspace }}" "${{ env.BUILD_OUTPUTFOLDER }}"
         $output_file = Join-Path $output_folder "${{ env.build_output_filename }}"
-        New-Item -Path "${{ github.workspace }}" -Name "${{ env.BUILD_OUTPUTFOLDER }}" -ItemType Directory -Force
-
-
 
         $folder_excludes = @( ".git", ".github", ".*", "bin", "win", "msbin", "mswin", "gnuwin32" )
         $candidate_folders = Get-ChildItem -Path $input_folder -Attributes Directory -Exclude $folder_excludes
@@ -164,7 +161,7 @@ jobs:
 
         $candidate_folders | ForEach-Object {
             Write-Host "  Scanning: $_... " -NoNewline
-            $folder_files = Get-ChildItem -Path $_.FullName -Recurse -File -Exclude $file_excludes
+            $folder_files = Get-ChildItem -Path $_.FullName -Recurse -File -Force -Exclude $file_excludes
             Write-Host "  Found: $($folder_files.Count) files"
 
             $candidate_files += $folder_files
@@ -175,6 +172,7 @@ jobs:
         Remove-Item $output_file -Force -ErrorAction SilentlyContinue
 
         Write-Host "Compressing: to : $output_file"
+        New-Item -Path "${{ github.workspace }}" -Name "${{ env.BUILD_OUTPUTFOLDER }}" -ItemType Directory -Force
         $candidate_files | Compress-Archive -DestinationPath $output_file -CompressionLevel Optimal -Verbose
 
         Get-ChildItem $output_file
