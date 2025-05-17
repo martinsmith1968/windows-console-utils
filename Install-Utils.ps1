@@ -18,6 +18,7 @@ param (
    ,[string]$targetFolder       = "c:\utils"
    ,[string]$osType             = "Any"
    ,[string[]]$groups           = @( "Standard", "Essentials", "Developer" )
+   ,[string[]]$appNames         = @( )
    ,[switch][bool]$noModifyPath = $false
    ,[switch][bool]$dryRun       = $false
    ,[switch][bool]$quiet        = $false
@@ -518,7 +519,7 @@ $defined_apps = @(
     ,[AppDefinition]::new("Microsoft Win2000 Resource Kit", "Standard",   [OSType]::Any, "apps\Microsoft\Win2000ResourceKit",                        "*.zip",                   "bin",                      [InstallType]::ExtractZip)
     ,[AppDefinition]::new("XmlStarlet",                     "Standard",   [OSType]::Any, "apps\xmlstarlet",                                          "*.zip",                   "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ), @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ExtractWildcard = "**\*.exe **\readme **\doc\*.txt" })
 
-    # Wndows Apps
+    # Windows Apps
     ,[AppDefinition]::new("Window Extensions",              "Standard",   [OSType]::Any, "apps-win\martinsmith1968\WindowExtensions",                "*.zip",                   "mswin\WindowExtensions",   [InstallType]::ExtractZip, @{ [InstallParameter]::ShortcutFilenames = "WindowExtensions.exe=Window Extensions" ; [InstallParameter]::ShortcutTarget = "shell:startup" })
     ,[AppDefinition]::new("WinFormsApplications",           "Standard",   [OSType]::Any, "apps-win\martinsmith1968\WinFormsApplications",            "*.zip",                   "mswin",                    [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ShortcutFilenames = "QuickCalendar.exe=Quick Calendar" ; [InstallParameter]::ShortcutTarget = "shell:startup" })
     ,[AppDefinition]::new("Metapad",                        "Standard",   [OSType]::Any, "apps-win\metapad",                                         "*.zip",                   "win",                      [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu(@{ [InstallParameter]::ShortcutFilenames = "metapad.exe=Metapad" }) ))
