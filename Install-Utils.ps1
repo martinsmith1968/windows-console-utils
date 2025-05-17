@@ -588,7 +588,12 @@ foreach($defined_app in $defined_apps) {
         $include = $True
     }
     if ($include) {
-        if (-Not $groups.Contains($defined_app.GroupName)) {
+        if ($appNames.Length -gt 0) {
+            if ($defined_app.Id -notin $appNames) {
+                $include = $False
+            }
+        }
+        elseif (-Not $groups.Contains($defined_app.GroupName)) {
             $include = $False
         }
     }
