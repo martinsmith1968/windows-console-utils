@@ -120,6 +120,21 @@ GOTO :EOF
 
 
 REM ********************************************************************************
+:VS2022             -- VISUAL STUDIO 2022 .NET AND TOOLS COMMAND PROMPT
+PUSHD .
+IF EXIST "D:\Program Files\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat" (
+    CALL "D:\Program Files\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat"
+) ELSE (
+    CALL "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\VsDevCmd.bat"
+)
+POPD
+
+COLOR 17
+
+GOTO :EOF
+
+
+REM ********************************************************************************
 :SQLDAC             -- SQL SERVER DACPAC
 CALL :_ADDPATHIFEXISTS "C:\Program Files (x86)\Microsoft SQL Server\130\DAC\bin"
 CALL :_ADDPATHIFEXISTS "C:\Program Files (x86)\Microsoft SQL Server\120\DAC\bin"
