@@ -1,0 +1,70 @@
+@ECHO OFF
+
+SETLOCAL
+
+SET SCRIPTNAME=%~n0
+SET SCRIPTFILENAME=%~nx0
+SET SCRIPTPATH=%~dp0
+
+SET DEBUG=N
+SET HELP=N
+SET DRYRUN=N
+SET VERBOSE=N
+SET COMMANDPREFIX=
+SET ARGPOS=0
+
+SET FILENAME=
+
+
+:PARSE
+IF "%~1" == "" GOTO :VALIDATE
+IF /I "%~1" == "/X" SET DEBUG=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-X" SET DEBUG=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/Z" SET COMMANDPREFIX=ECHO.&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-Z" SET COMMANDPREFIX=ECHO.&&SHIFT&&GOTO :PARSE 
+IF /I "%~1" == "/?" SET HELP=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-?" SET HELP=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/V" SET VERBOSE=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-V" SET VERBOSE=Y&&SHIFT&&GOTO :PARSE
+
+SET /A ARGPOS+=1
+IF %ARGPOS% EQU 1 SET FILENAME=%~1&&SHIFT&&GOTO :PARSE
+
+CALL :ERROR "Unknown argument at position %ARGPOS%: %~1"
+GOTO :EOF
+
+
+:VALIDATE
+IF "%FILENAME%" == "" (
+    CALL :USAGE
+    CALL :ERROR "No filename specified"
+    GOTO :EOF
+)
+
+IF "%VERBOSE%" == "Y" ECHO.Zeroing: %FILENAME%
+IF "%COMMANDPREFIX%" == "" (
+    COPY /Y NUL "%FILENAME%" > NUL
+) ELSE (
+    %COMMANDPREFIX%COPY /Y NUL "%FILENAME%"
+)
+
+GOTO :EOF
+
+
+:USAGE
+ECHO.
+ECHO Usage: %SCRIPTNAME% [options] <filename>
+ECHO.
+ECHO Options:
+ECHO   /?  Show this help message
+ECHO   /x  Enable debug mode
+ECHO   /z  Echo commands instead of executing them
+ECHO   /v  Enable verbose output
+ECHO.
+ECHO Examples:
+ECHO   %SCRIPTNAME% -v myfile.tar
+
+
+:ERROR
+ECHO ERROR: %~1
+GOTO :EOF
