@@ -363,8 +363,8 @@ class AppDefinition{
                 if ($action -eq [InstallAction]::RenameReadmes) {
                     $installBaseName = [System.IO.Path]::GetFileNameWithoutExtension($sourceFile)
 
-                    $licenceFiles = Get-ChildItem -Path $targetPath -Filter readme*.*
-                    foreach($readmeFile in $licenceFiles) {
+                    $readmeFiles= Get-ChildItem -Path $targetPath -Filter readme*.*
+                    foreach($readmeFile in $readmeFiles) {
                         $oldExtension = [System.IO.Path]::GetExtension($readmeFile)
                         $newFileName = Join-Path $targetPath ($installBaseName + $oldExtension)
                         Write-Log "-- Renaming: ${readmeFile} - ${newFileName}"
