@@ -22,6 +22,7 @@ SET VERSIONSUFFIX=
 SET FRAMEWORK=
 SET RUNTIMEIDENTIFIER=
 SET OUTPUTDIR=
+SET PACKOUTPUTDIR=
 SET ISSELFCONTAINED=N
 SET NOBUILD=N
 SET NORESTORE=N
@@ -76,6 +77,8 @@ IF /I "%~1" == "/NR" SET NORESTORE=Y&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "-NR" SET NORESTORE=Y&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "/O" SET OUTPUTDIR=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "-O" SET OUTPUTDIR=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/PO" SET PACKOUTPUTDIR=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-PO" SET PACKOUTPUTDIR=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "/LP" SET LAUNCHPROFILE=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "-LP" SET LAUNCHPROFILE=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
 
@@ -133,9 +136,20 @@ ECHO.%SCRIPTNAME% - dotnet command helper
 ECHO.Usage: %~n0 [command] [options]
 ECHO.
 ECHO.Commands:
-ECHO.rebuild     - clean and rebuild a solution (Shortcut: rb / cb)
-ECHO.rebuildtest - clean, rebuild and test a solution (Shortcut: rbt / cbt)
-ECHO.run         - run a project (Shortcut: r)
+ECHO.clean        - Clean the current solution / target [c]
+ECHO.restore      - Restore the packages for the current solution / target [e]
+ECHO.build        - Build the current solution / target [b]
+ECHO.test         - Run tests for the current solution / target [t]
+ECHO.pack         - Pack the current solution / target [p]
+ECHO.publish      - Publish the current solution / target [u]
+ECHO.run          - Run the current project / target [r]
+ECHO.version      - Show the dotnet version / available versions [v]
+ECHO.
+ECHO.rebuild      - clean and build [rb]
+ECHO.rebuildtest  - clean, rebuild and test a solution [rbt]
+ECHO.
+ECHO.You can concatenate commands using the shortcuts, to execute those commands in sequence.
+ECHO. E.g. 'cebtp' will execute 'clean', 'restore', 'build', 'test', and 'pack'.
 ECHO.
 ECHO.Options:
 ECHO./C [configuration] - Set the build configuration
@@ -145,6 +159,15 @@ ECHo./Y [verbosity]     - Set the verbosity level (default: minimal) (q[uiet], m
 ECHO./Y0[-4]            - Set the Verbosity level (0=quiet, 1=minimal, 2=normal, 3=detailed, 4=diagnostic)
 
 GOTO :EOF
+
+
+
+
+rebuild
+
+
+
+
 
 
 REM --------------------------------------------------------------------------------
@@ -173,11 +196,14 @@ REM ----------------------------------------------------------------------------
 :PARSECOMMAND
 SET PARSECOMMANDSUCCESS=N
 
-IF /I "%~1" == "clean"   CALL :ADDCOMMAND clean&& GOTO :EOF
-IF /I "%~1" == "restore" CALL :ADDCOMMAND restore&& GOTO :EOF
-IF /I "%~1" == "build"   CALL :ADDCOMMAND build&& GOTO :EOF
-IF /I "%~1" == "pack"    CALL :ADDCOMMAND pack&& GOTO :EOF
-IF /I "%~1" == "test"    CALL :ADDCOMMAND test&& GOTO :EOF
+IF /I "%~1" == "clean"    CALL :ADDCOMMAND clean&& GOTO :EOF
+IF /I "%~1" == "restore"  CALL :ADDCOMMAND restore&& GOTO :EOF
+IF /I "%~1" == "build"    CALL :ADDCOMMAND build&& GOTO :EOF
+IF /I "%~1" == "test"     CALL :ADDCOMMAND test&& GOTO :EOF
+IF /I "%~1" == "pack"     CALL :ADDCOMMAND pack&& GOTO :EOF
+IF /I "%~1" == "publish"  CALL :ADDCOMMAND publish&& GOTO :EOF
+IF /I "%~1" == "run"      CALL :ADDCOMMAND run&& GOTO :EOF
+IF /I "%~1" == "version"  CALL :ADDCOMMAND version&& GOTO :EOF
 
 IF /I "%~1" == "rebuild" (
   CALL :ADDCOMMAND clean
@@ -196,14 +222,20 @@ SET COMMANDPART=%COMMANDPARTS:~0,1%
 
 IF /I "%COMMANDPART%" == "c" (
   CALL :ADDCOMMAND clean
-) ELSE IF /I "%COMMANDPART%" == "r" (
+) ELSE IF /I "%COMMANDPART%" == "s" (
   CALL :ADDCOMMAND restore
 ) ELSE IF /I "%COMMANDPART%" == "b" (
   CALL :ADDCOMMAND build
-) ELSE IF /I "%COMMANDPART%" == "p" (
-  CALL :ADDCOMMAND pack
 ) ELSE IF /I "%COMMANDPART%" == "t" (
   CALL :ADDCOMMAND test
+) ELSE IF /I "%COMMANDPART%" == "p" (
+  CALL :ADDCOMMAND pack
+) ELSE IF /I "%COMMANDPART%" == "u" (
+  CALL :ADDCOMMAND publish
+) ELSE IF /I "%COMMANDPART%" == "r" (
+  CALL :ADDCOMMAND run
+) ELSE IF /I "%COMMANDPART%" == "v" (
+  CALL :ADDCOMMAND version
 ) ELSE (
   CALL :ERROR "Invalid command alias/abbreviation: %COMMANDPART%"
   GOTO :EOF
@@ -221,8 +253,8 @@ SET COMMAND=!COMMAND%~1!
 IF /I "%COMMAND%" == "clean"    CALL :COMMAND_CLEAN   && GOTO :EOF
 IF /I "%COMMAND%" == "restore"  CALL :COMMAND_RESTORE && GOTO :EOF
 IF /I "%COMMAND%" == "build"    CALL :COMMAND_BUILD   && GOTO :EOF
-IF /I "%COMMAND%" == "pack"     CALL :COMMAND_PACK    && GOTO :EOF
 IF /I "%COMMAND%" == "test"     CALL :COMMAND_TEST    && GOTO :EOF
+IF /I "%COMMAND%" == "pack"     CALL :COMMAND_PACK    && GOTO :EOF
 IF /I "%COMMAND%" == "publish"  CALL :COMMAND_PUBLISH && GOTO :EOF
 IF /I "%COMMAND%" == "run"      CALL :COMMAND_RUN     && GOTO :EOF
 IF /I "%COMMAND%" == "version"  CALL :COMMAND_VERSION && GOTO :EOF
@@ -255,6 +287,8 @@ REM ----------------------------------------------------------------------------
 :COMMAND_RESTORE
 SET EXTRA=
 IF NOT "%TARGET%" == ""            SET EXTRA=%EXTRA% %TARGET%
+IF NOT "%VERBOSITY%" == ""         SET EXTRA=%EXTRA% -v %VERBOSITY%
+IF NOT "%RUNTIMEIDENTIFIER%" == "" SET EXTRA=%EXTRA% -r %RUNTIMEIDENTIFIER%
 
 CALL :SHOWCOMMANDBANNER "restore"
 @IF "%DEBUG%" == "Y" @ECHO ON
@@ -286,6 +320,25 @@ GOTO :EOF
 
 
 REM --------------------------------------------------------------------------------
+:COMMAND_TEST
+SET EXTRA=
+IF NOT "%TARGET%" == ""            SET EXTRA=%EXTRA% %TARGET%
+IF NOT "%VERBOSITY%" == ""         SET EXTRA=%EXTRA% -v %VERBOSITY%
+IF NOT "%CONFIGURATION%" == ""     SET EXTRA=%EXTRA% -c %CONFIGURATION%
+IF NOT "%FRAMEWORK%" == ""         SET EXTRA=%EXTRA% -f %FRAMEWORK%
+IF NOT "%RUNTIMEIDENTIFIER%" == "" SET EXTRA=%EXTRA% -r %RUNTIMEIDENTIFIER%
+IF "%NOBUILD%" == "Y"              SET EXTRA=%EXTRA% --no-build
+IF "%NORESTORE%" == "Y"            SET EXTRA=%EXTRA% --no-restore
+
+CALL :SHOWCOMMANDBANNER "test"
+@IF "%DEBUG%" == "Y" @ECHO ON
+%COMMANDPREFIX%dotnet test %EXTRA%
+@IF "%DEBUG%" == "Y" @ECHO OFF
+
+GOTO :EOF
+
+
+REM --------------------------------------------------------------------------------
 :COMMAND_PACK
 SET PACKAGEVERSION=%VERSION%
 IF NOT "%VERSIONSUFFIX%" == "" (
@@ -302,32 +355,13 @@ IF NOT "%VERBOSITY%" == ""         SET EXTRA=%EXTRA% -v %VERBOSITY%
 IF NOT "%CONFIGURATION%" == ""     SET EXTRA=%EXTRA% -c %CONFIGURATION%
 IF "%NOBUILD%" == "Y"              SET EXTRA=%EXTRA% --no-build
 IF "%NORESTORE%" == "Y"            SET EXTRA=%EXTRA% --no-restore
-IF NOT "%OUTPUTDIR%" == ""         SET EXTRA=%EXTRA% -o %OUTPUTDIR%
+IF NOT "%PACKOUTPUTDIR%" == ""     SET EXTRA=%EXTRA% -o %PACKOUTPUTDIR%
 IF NOT "%VERSIONSUFFIX%" == ""     SET EXTRA=%EXTRA% --version-suffix %VERSIONSUFFIX%
 IF NOT "%VERSION%" == ""           SET EXTRA=%EXTRA% /p:Version=%PACKAGEVERSION%
 
 CALL :SHOWCOMMANDBANNER "pack"
 @IF "%DEBUG%" == "Y" @ECHO ON
 %COMMANDPREFIX%dotnet pack %EXTRA%
-@IF "%DEBUG%" == "Y" @ECHO OFF
-
-GOTO :EOF
-
-
-REM --------------------------------------------------------------------------------
-:COMMAND_TEST
-SET EXTRA=
-IF NOT "%TARGET%" == ""            SET EXTRA=%EXTRA% %TARGET%
-IF NOT "%VERBOSITY%" == ""         SET EXTRA=%EXTRA% -v %VERBOSITY%
-IF NOT "%CONFIGURATION%" == ""     SET EXTRA=%EXTRA% -c %CONFIGURATION%
-IF NOT "%FRAMEWORK%" == ""         SET EXTRA=%EXTRA% -f %FRAMEWORK%
-IF NOT "%RUNTIMEIDENTIFIER%" == "" SET EXTRA=%EXTRA% -r %RUNTIMEIDENTIFIER%
-IF "%NOBUILD%" == "Y"              SET EXTRA=%EXTRA% --no-build
-IF "%NORESTORE%" == "Y"            SET EXTRA=%EXTRA% --no-restore
-
-CALL :SHOWCOMMANDBANNER "test"
-@IF "%DEBUG%" == "Y" @ECHO ON
-%COMMANDPREFIX%dotnet test %EXTRA%
 @IF "%DEBUG%" == "Y" @ECHO OFF
 
 GOTO :EOF
