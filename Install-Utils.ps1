@@ -76,7 +76,6 @@ $groups += "Mandatory"
 # - DesktopTrayLauncher
 # - mobzsystems
 # - RapidEE
-# - Rufus
 # - SJFranke
 # - SoftwareOK
 # - SystemInformer
@@ -552,6 +551,8 @@ $defined_apps = @(
     ,[AppDefinition]::new("SmartSystemMenu",                "Standard",   [OSType]::Any, "apps-win\SmartSystemMenu",                                 "Smart*.zip",              "win\SmartSystemMenu",      [InstallType]::ExtractZip, @{ [InstallParameter]::ShortcutFilenames = "Smart*.exe=SmartSystemMenu" ; [InstallParameter]::ShortcutTarget = "shell:startup" } )
     ,[AppDefinition]::new("XnViewMP",                       "Standard",   [OSType]::x64, "apps-win\XnView",                                          "XnViewMP-win*.zip",       "win\XnViewMP",             [InstallType]::ExtractZip, @( [InstallAction]::ClearTargetFolder ), [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ShortcutFilenames = "XnView*.exe=XnViewMP" }) ))
     ,[AppDefinition]::new("Draw.IO",                        "Developer",  [OSType]::Any, "apps-win\draw.io",                                         "draw.io*.zip",            "win\draw.io",              [InstallType]::ExtractZip, @( [InstallAction]::ClearTargetFolder ), [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ShortcutFilenames = "draw*.exe=draw.io" }) ))
+    ,[AppDefinition]::new("Rufus",                          "System",     [OSType]::Any, "apps-win\rufus",                                           "rufus*.exe",              "win",                      [InstallType]::CopyFiles, [hashtable]( ApplyStandardShortcutMenu(@{ [InstallParameter]::ShortcutFilenames = "rufus*.exe=Rufus" }) ))
+    ,[AppDefinition]::new("H2TestW",                        "System",     [OSType]::Any, "apps-win\h2testw",                                         "h2testw*.zip",            "win",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ), [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ExtractWildcard = "*.exe readme.*" ; [InstallParameter]::ShortcutFilenames = "hwtest2*.exe=H2TestW" }) ))
 
     ,[AppDefinition]::new("Login Script",                   "Essentials", [OSType]::Any, "",                                                         "Login.cmd",               "",                         [InstallType]::None, @{ [InstallParameter]::ShortcutFilenames = "Login.cmd=Login Script" ; [InstallParameter]::ShortcutTarget = "shell:startup" })
 )
