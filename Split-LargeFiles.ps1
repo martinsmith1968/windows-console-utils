@@ -61,7 +61,7 @@ foreach($item in $items) {
     
     & $command $item.FullName --out "$($item.Name)-split$($item.Extension)" -s $splitSizeText
     
-    Add-ContentIfNotPresent -Path ".gitignore" -Value "$($item.Name)"
+    Add-ContentIfNotPresent -Path ".gitignore" -Value "$($item.Name)" "*"
 
     Pop-Location
 }

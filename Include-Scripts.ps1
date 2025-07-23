@@ -15,9 +15,15 @@ function Write-SeparatorLine([System.ConsoleColor] $color = [System.ConsoleColor
     Write-Host $line -ForegroundColor $color
 }
 
-function Add-ContentIfNotPresent([string] $path, [string] $value) {
+function Add-ContentIfNotPresent([string] $path, [string] $value, [string] $additionalValue = $null) {
     $content = Get-Content -Path $path -ErrorAction SilentlyContinue
-    if (-not ($content -contains $value)) {
+
+    $valueExists = $content -contains $value
+    if ($additionalValue -and -not $valueExists) {
+        $valueExists = $content -contains $additionalValue
+    }
+
+    if (-not $valueExists) {
         Add-Content -Path $path -Value $value
     }
 }
