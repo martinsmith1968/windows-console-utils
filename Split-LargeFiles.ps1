@@ -52,19 +52,28 @@ Write-Host "Found $($items.count) candidate files larger than $($threshold / 1MB
 $splitSizeText = "$($maxSplitSize / 1MB)m"
 
 $index = 0
+$splitCount = 0
 foreach($item in $items) {
     ++$index
     Write-SeparatorLine
-    Write-Host "${index}: $($item.FullName) - $($item.Length)"
+    Write-Host "${index}: $($item.FullName) - $($item.Length.ToString('#,##0'))" -ForegroundColor Yellow
     
     Push-Location $item.Directory
+
+    $gitkeep_file = Test-FileExists -path (Join-Path $item.Directory ".gitkeep")
+    if ($gitkeep_file) {
+        Write-Host "Skipping .gitkeep directory (${gitkeep_file})" -ForegroundColor Cyan
+    } elseif (Get-FileHasContent -path ".gitignore" -line $item.Name) {
+        Write-Host "Skipping .gitignored file" -ForegroundColor Cyan
+    } else {
+        & $command $item.FullName --out "$($item.Name)-split$($item.Extension)" -s $splitSizeText
     
-    & $command $item.FullName --out "$($item.Name)-split$($item.Extension)" -s $splitSizeText
-    
-    Add-ContentIfNotPresent -Path ".gitignore" -Value "$($item.Name)" "*"
+        Add-ContentIfNotPresent -Path ".gitignore" -Value "$($item.Name)" "*"
+        $splitCount++
+    }
 
     Pop-Location
 }
 
 Write-SeparatorLine
-Write-Host "${index} - files split"
+Write-Host "${splitCount} - files split"

@@ -20,15 +20,24 @@ param (
 
 . $PSScriptRoot\Include-Scripts.ps1
 
-$items = Get-LargeFiles -threshold $threshold
-Write-Host "Found $($items.count) candidate files larger than $($threshold / 1MB)MB"
+$candidate_items = Get-LargeFiles -threshold $threshold
+Write-Host "Found $($candidate_items.count) candidate files larger than $($threshold / 1MB)MB"
+
+$items= @()
+foreach($candidate_item in $candidate_items) {
+    $gitkeep_path = Join-Path $candidate_item.Directory.FullName ".gitkeep"
+    if (Test-FileExists -Path $gitkeep_path) {
+        continue
+    }
+    $items += $candidate_item
+}
 
 $index = 0
 if ($items.Count -gt 0) {
     Write-SeparatorLine
     foreach($item in $items) {
         ++$index
-        Write-Host "${index}: $($item.FullName) - $($item.Length)"
+        Write-Host "${index}: $($item.FullName) - $($item.Length.ToString('#,##0'))" -ForegroundColor Yellow
     }
 }
 
