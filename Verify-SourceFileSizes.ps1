@@ -28,6 +28,11 @@ foreach($candidate_item in $candidate_items) {
     $gitkeep_path = Join-Path $candidate_item.Directory.FullName ".gitkeep"
     if (Test-FileExists -Path $gitkeep_path) {
         continue
+    } else {
+        $gitIgnore_path = Join-Path $candidate_item.Directory.FullName ".gitignore"
+        if (Get-FileHasContent -path $gitIgnore_path -line $candidate_item.Name) {
+            continue
+        }
     }
     $items += $candidate_item
 }
