@@ -1,0 +1,34 @@
+[
+  {
+    "Id": "F2 Batch Renamer",
+    "GroupName": "Standard",
+    "OsType": "x32",
+    "SourceFolder": "apps\\f2",
+    "SourceWildcard": "f2*x86*.7ip",
+    "TargetFolder": "bin",
+    "InstallType": "ExtractZip",
+    "Actions": [
+      "RenameReadmes"
+    ],
+    "Parameters": {
+      "ExtractCommand": "e",
+      "ExtractWildcard": "**\\*.exe **\\readme.md **\\scripts\\*"
+    }
+  },
+  {
+    "Id": "F2 Batch Renamer",
+    "GroupName": "Standard",
+    "OsType": "x64",
+    "SourceFolder": "apps\\f2",
+    "SourceWildcard": "f2*x64*.7z",
+    "TargetFolder": "bin",
+    "InstallType": "ExtractZip",
+    "Actions": [
+      "RenameReadmes"
+    ],
+    "Parameters": {
+      "ExtractCommand": "e",
+      "ExtractWildcard": "**\\*.exe **\\readme.md **\\scripts\\*"
+    }
+  }
+]
