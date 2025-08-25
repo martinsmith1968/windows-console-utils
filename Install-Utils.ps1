@@ -34,6 +34,7 @@ if ($debug) {
     Write-Host "targetFolder: $targetFolder"
     Write-Host "osType:       $osType"
     Write-Host "groups:       $groups"
+    Write-Host "appNames:     $appNames"
     Write-Host "modifyPath:   $modifyPath"
     Write-Host "dryRun:       $dryRun"
     Write-Host "verbose:      $verbose"
@@ -339,6 +340,12 @@ class AppDefinition{
                 }
                 # InstallType - ExtractZip
                 elseif ($this.InstallType -eq [InstallType]::ExtractZip) {
+                    $redundantDuplicateFileName = $sourceFile.FullName + "-split.zip"
+                    if (Test-Path $redundantDuplicateFileName) {
+                        Write-Log "-- WARNING: Skipping Redundant Duplicate File Name: ${redundantDuplicateFileName}"
+                        continue
+                    }
+
                     Write-Log "-- Extracting: ${sourceFile}"
 
                     $commandFullName = Join-Path $baseTargetFolder "bin" "7za.exe"
