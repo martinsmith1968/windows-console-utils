@@ -214,6 +214,7 @@ jobs:
       shell: pwsh
       run: |
         $targetFolder = Join-Path "${{ github.workspace }}" "Install" "${{ matrix.group }}" "${{ matrix.osType }}"
+        New-Item -Path $targetFolder -ItemType Directory -Force
 
         Write-Host "**********************************************************************"
         Write-Host "** Installing Windows Console Utils"
