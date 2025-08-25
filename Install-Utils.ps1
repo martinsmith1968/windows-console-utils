@@ -412,10 +412,19 @@ class AppDefinition{
                     }
                     # Action - RelocateTargetParent
                     elseif ($action -eq [InstallAction]::RelocateTargetToParent) {
-                        foreach($targetFolder in Get-ChildItem -Path $targetPath) {
-                            Write-Log "-- Relocating Target: ${targetFolder}"
-                            foreach($item in Get-ChildItem -Path $targetFolder) {
-                                Write-Log "-- Moving Item: ${item} to ${targetPath}"
+                        $targetFolders = Get-ChildItem -Path $targetPath
+                        $targetFolderCount = $targetFolders.Count
+                        $targetFolderIndex = 0
+                        foreach($targetFolder in $targetFolders) {
+                            $targetFolderIndex += 1
+                            Write-Log "-- Relocating Target ${targetFolderIndex} / ${targetFolderCount} : ${targetFolder}"
+
+                            $targetItems = Get-ChildItem -Path $targetFolder
+                            $targetItemCount = $targetItems.Count
+                            $targetItemIndex = 0
+                            foreach($item in $targetItems) {
+                                $targetItemIndex += 1
+                                Write-Log "-- Moving Item ${targetItemIndex} / ${targetItemCount} : ${item} to ${targetPath}"
                                 Move-Item -Path $item.FullName -Destination $targetPath -Force -Verbose:$verbose
                             }
 
