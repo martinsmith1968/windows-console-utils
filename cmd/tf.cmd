@@ -7,11 +7,12 @@ SET SCRIPTNAME=%~n0
 SET SCRIPTFULLFILENAME=%~dpnx0
 
 SET HOMEDIR=C:\ProgramData\Terraform
+SET EXEBASENAME=terraform_
 
 SET HELP=N
 SET DEBUG=N
 SET LIST=N
-SET VERSION=173
+SET VERSION=1_13_1
 SET PARAMETERS=
 
 FOR %%* IN (%HOMEDIR%\*.default_version) DO SET VERSION=%%~n*
@@ -36,7 +37,7 @@ GOTO :PARSEOPTIONS
 
 
 :VALIDATE
-SET EXECUTABLE=terraform%VERSION%.exe
+SET EXECUTABLE=%EXEBASENAME%%VERSION%.exe
 IF "%DEBUG%" == "Y" ECHO.EXECUTABLE=%EXECUTABLE%
 
 :EXECUTE
@@ -75,9 +76,22 @@ GOTO :EOF
 :LISTVERSIONS
 ECHO.Available Versions:
 @IF "%DEBUG%" == "Y" @ECHO ON
-DIR /b "%HOMEDIR%\*.exe" /on | sed -e "s/terraform//g" -e "s/.exe//g" | grep -v "^$" | sed -e "s/^/- /g"
+FOR %%F IN (%HOMEDIR%\*.exe) DO CALL :SHOWFILENAMEASVERSION %%F
 @IF "%DEBUG%" == "Y" @ECHO OFF
 
+GOTO :EOF
+
+
+:SHOWFILENAMEASVERSION
+@IF "%DEBUG%" == "Y" @ECHO ON
+SET NAME=%~n1
+SET VERNAME=%NAME:terraform_=%
+REM TODO: Get Variable substitution working
+REM SET NAME2=%NAME:!EXEBASENAME!=%
+REM SET NAME3=%~n1:!EXEBASENAME!=%
+@IF "%DEBUG%" == "Y" @ECHO OFF
+
+ECHO.- %VERNAME%
 GOTO :EOF
 
 
