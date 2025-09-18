@@ -222,7 +222,7 @@ GOTO :EOF
 :VIEW
 :LIST
 :SHOW
-CALL :HEADER
+CALL :SHOWHEADER
 CALL :SHOWDATAFILENAME
 
 SET UNDERLINE1=
@@ -405,7 +405,7 @@ IF EXIST "%DATAFILE%" (
 GOTO :EOF
 
 
-:HEADER
+:SHOWHEADER
 CALL "%SCRIPTPATH%\GetDateTime.cmd"
 
 ECHO.%SCRIPTNAME% - Control favourite folders
@@ -424,7 +424,7 @@ GOTO :EOF
 
 :HELP
 :USAGE
-CALL :HEADER
+CALL :SHOWHEADER
 ECHO.Usage:
 ECHO.%SCRIPTNAME% [ add / del / set / list / export / npp / {alias-name} ] {options}
 ECHO.
@@ -484,10 +484,9 @@ GOTO:EOF
 
 
 :strlen string len
-SETLOCAL EnableDelayedExpansion
 SET "token=#%~1" & SET "len=0"
 FOR /L %%A IN (12,-1,0) DO (
     SET /A "len|=1<<%%A"
     FOR %%B IN (!len!) DO IF "!token:~%%B,1!"=="" SET /A "len&=~1<<%%A"
 )
-ENDLOCAL & SET %~2=%len%
+SET %~2=%len%
