@@ -134,7 +134,7 @@ jobs:
   build:
     name: Build
     needs: setup
-    runs-on: windows-latest
+    runs-on: windows-2022
 
     steps:
     - name: Checkout
@@ -198,7 +198,7 @@ jobs:
 
     name: Install - ${{ matrix.group }} - ${{ matrix.osType }}
     needs: build
-    runs-on: windows-latest
+    runs-on: windows-2022
 
     steps:
     - name: Checkout
