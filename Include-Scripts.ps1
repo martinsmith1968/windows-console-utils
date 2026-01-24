@@ -1,8 +1,12 @@
-function Get-LargeFiles([int32] $threshold) {
+function Get-LargeFiles(
+    [int32] $threshold,
+    [string]$file_extension = "*"
+    )
+{
     $foldersToExclude = Get-ChildItem $PSScriptRoot -Directory | Where-Object { Test-Path -Path (Join-Path $_.FullName ".gitkeep") }
     $excludeList = $foldersToExclude | Join-String -Property Name -Separator ","
 
-    $items = Get-ChildItem $PSScriptRoot -Exclude ${excludeList} | Get-ChildItem -Recurse -File | Where-Object {
+    $items = Get-ChildItem $PSScriptRoot -Exclude ${excludeList} | Get-ChildItem -Recurse -File -Filter $file_extension | Where-Object {
         $_.Length -gt $threshold
     }
 

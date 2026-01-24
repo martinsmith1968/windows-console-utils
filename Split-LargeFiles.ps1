@@ -46,7 +46,7 @@ if (!(Test-Path $command -PathType Leaf)) {
     }
 }
 
-$items = Get-LargeFiles -threshold $threshold
+$items = Get-LargeFiles -threshold $threshold -file_extension "*.zip"
 Write-Host "Found $($items.count) candidate files larger than $($threshold / 1MB)MB"
 
 $splitSizeText = "$($maxSplitSize / 1MB)m"
