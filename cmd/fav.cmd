@@ -54,6 +54,8 @@ IF /I "%~1" == "REMOVE" SET TARGET=DELETE
 IF /I "%~1" == "VIEW"   SET TARGET=LIST
 IF /I "%~1" == "LIST"   SET TARGET=LIST
 IF /I "%~1" == "L"      SET TARGET=LIST
+IF /I "%~1" == "WHERE"  SET TARGET=WHERE
+IF /I "%~1" == "W"      SET TARGET=WHERE
 IF /I "%~1" == "SET"    SET TARGET=SET
 IF /I "%~1" == "?"      SET TARGET=USAGE
 IF /I "%~1" == "-?"     SET TARGET=USAGE
@@ -249,6 +251,20 @@ FOR /F "usebackq tokens=1,2* delims=%DELIM%" %%A IN ("%DATAFILE%") DO (
 GOTO :EOF
 
 
+:WHERE
+SET TARGET=%~1
+IF "%TARGET%" == "" SET TARGET=%CD%
+
+CALL :FINDBYEXACTTARGET "%TARGET%"
+IF "%FOUND%" == "Y" (
+    GOTO :EOF
+)
+
+ECHO.Directory not found : %TARGET%
+
+GOTO :EOF
+
+
 :SHOWALIAS
 SET INDICATOR=
 IF NOT EXIST "%~2\*.*" (
@@ -327,6 +343,26 @@ FOR /F "usebackq tokens=1,2* delims=%DELIM%" %%A IN ("%DATAFILE%") DO (
 
 IF %FOUND% EQU 1 (
     SET FOUND=Y
+)
+
+GOTO :EOF
+
+
+:FINDBYEXACTTARGET
+SET FOUND=N
+SET FINDALIAS=
+SET FINDTARGET=
+FOR /F "usebackq tokens=1,2* delims=%DELIM%" %%A IN ("%DATAFILE%") DO (
+    CALL :DEBUG "%%A - %%B"
+    IF /I "%%B" == "%~1" (
+        ECHO.Found: %%A - %%B
+        
+        SET FOUND=Y
+        SET FINDALIAS=%%A
+        SET FINDTARGET=%%B
+
+        GOTO :EOF
+    )
 )
 
 GOTO :EOF
@@ -428,7 +464,7 @@ GOTO :EOF
 :USAGE
 CALL :HEADER
 ECHO.Usage:
-ECHO.%SCRIPTNAME% [ add / del / set / list / export / npp / {alias-name} ] {options}
+ECHO.%SCRIPTNAME% [ add / del / set / list / where / export / npp / {alias-name} ] {options}
 ECHO.
 ECHO.add - add a favourite folder
 ECHO.E.g. %SCRIPTNAME% add {alias-name} [ {folder} ] 
