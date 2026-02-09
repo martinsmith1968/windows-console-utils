@@ -2,6 +2,10 @@
 
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
+SET SCRIPTPATH=%~dp0
+SET SCRIPTNAME=%~n0
+SET SCRIPTFULLFILENAME=%~dpnx0
+
 SET HELP=N
 SET POS=0
 SET SOURCE=
@@ -89,9 +93,9 @@ GOTO :EOF
 
 
 :USAGE
-ECHO.%~n0 - Set the Console Window Title using current directory
+ECHO.%SCRIPTNAME% - Set the Console Window Title using current directory
 ECHO.
-ECHO.%~n0 [command] { [switches] }
+ECHO.%SCRIPTNAME% [command] { [switches] }
 ECHO.
 ECHO.Commands:
 ECHO.P[ATH]     - Set By Full Directory Path

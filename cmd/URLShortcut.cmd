@@ -2,6 +2,10 @@
 
 SETLOCAL EnableDelayedExpansion
 
+SET SCRIPTPATH=%~dp0
+SET SCRIPTNAME=%~n0
+SET SCRIPTFULLFILENAME=%~dpnx0
+
 IF "%~1" == "" (
   CALL :USAGE
   GOTO :EOF
@@ -24,8 +28,8 @@ GOTO :EOF
 
 
 :USAGE
-ECHO.%~n0 - Generate a URL shortcut file
+ECHO.%SCRIPTNAME% - Generate a URL shortcut file
 ECHO.
-ECHO.%~n0 [url] { [filename] }
+ECHO.%SCRIPTNAME% [url] { [filename] }
 
 GOTO :EOF

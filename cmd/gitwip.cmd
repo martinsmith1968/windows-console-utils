@@ -2,6 +2,10 @@
 
 SETLOCAL EnableDelayedExpansion
 
+SET SCRIPTPATH=%~dp0
+SET SCRIPTNAME=%~n0
+SET SCRIPTFULLFILENAME=%~dpnx0
+
 SET POS=1
 
 SET DEBUG=N
@@ -105,9 +109,9 @@ GOTO :EOF
 
 
 :USAGE
-ECHO.%~n0 - Show status of git folders than are not on %MASTERBRANCH%
+ECHO.%SCRIPTNAME% - Show status of git folders than are not on %MASTERBRANCH%
 ECHO.
-ECHO.%~n0 [folder] [options]
+ECHO.%SCRIPTNAME% [folder] [options]
 ECHO.
 ECHO.[folder]     - Folder to check
 ECHO.

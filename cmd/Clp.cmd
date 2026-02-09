@@ -48,7 +48,7 @@ GOTO :EOF
 :USAGE
 ECHO.%SCRIPTNAME% - Manipulate the Clipboard (using NIRCMD)
 ECHO.
-ECHO.Usage: %~n0 [command] { [parameters] }
+ECHO.Usage: %SCRIPTNAME% [command] { [parameters] }
 ECHO.
 ECHO.Commands:
 ECHO. CLEAR           - Clear the clipboard

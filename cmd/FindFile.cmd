@@ -101,11 +101,13 @@ GOTO :EOF
 :USAGE
 ECHO.%SCRIPTNAME% - Locate a file
 ECHO.
-ECHO.Usage: %~n0 [filename] [options]
+ECHO.Usage: %SCRIPTNAME% [filename] [options]
 ECHO.
 ECHO.Options:
 ECHO./F     - Root Directory to start searching from
 ECHO./P     - Pause after each screen
+ECHO./O     - Save output to file (/O- to disable)
+ECHO./OD    - Save output to specific directory (/OD- to disable)
 ECHO./D     - Search for Directories only (/D- to exclude)
 ECHO./S     - Search for System Files only (/S- to exclude)
 ECHO./H     - Search for Hidden Files only (/H- to exclude)

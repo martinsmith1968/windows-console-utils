@@ -1,5 +1,11 @@
 @ECHO OFF
 
+SETLOCAL
+
+SET SCRIPTPATH=%~dp0
+SET SCRIPTNAME=%~n0
+SET SCRIPTFULLFILENAME=%~dpnx0
+
 IF "%~1" == "" (
     CALL :USAGE
     GOTO :EOF
@@ -21,12 +27,12 @@ GOTO :EOF
 
 
 :USAGE
-ECHO %~n0 - Remove all binary and intermediate files and folders from a solution
+ECHO %SCRIPTNAME% - Remove all binary and intermediate files and folders from a solution
 ECHO.
 ECHO.Usage:
-ECHO.%~n0 [solution-folder-name]
+ECHO.%SCRIPTNAME% [solution-folder-name]
 ECHO.
-BANNERTEXT "%~n0 is obsolete. Use CleanVSSolution and CleanVSProject commands instead"
+BANNERTEXT "%SCRIPTNAME% is obsolete. Use CleanVSSolution and CleanVSProject commands instead"
 GOTO :EOF
 
 

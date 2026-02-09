@@ -119,7 +119,7 @@ GOTO :EOF
 
 :USAGE
 ECHO.%SCRIPTNAME% - .NET command helper
-ECHO.Usage: %~n0 [command] [options]
+ECHO.Usage: %SCRIPTNAME% [command] [options]
 ECHO.
 ECHO.Commands:
 ECHO.rebuild     - clean and rebuild a solution (Shortcut: rb / cb)

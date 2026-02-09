@@ -2,6 +2,10 @@
 
 SETLOCAL
 
+SET SCRIPTPATH=%~dp0
+SET SCRIPTNAME=%~n0
+SET SCRIPTFULLFILENAME=%~dpnx0
+
 IF "%~1" == "" (
     CALL :USAGE
     GOTO :EOF
@@ -13,10 +17,10 @@ GOTO :EOF
 
 
 :USAGE
-ECHO %~n0 - Create a startup shortcut for a target executable
+ECHO %SCRIPTNAME% - Create a startup shortcut for a target executable
 ECHO.
 ECHO.Usage:
-ECHO.%~n0 [target] { [arguments] }
+ECHO.%SCRIPTNAME% [target] { [arguments] }
 GOTO :EOF
 
 

@@ -2,6 +2,10 @@
 
 SETLOCAL
 
+SET SCRIPTPATH=%~dp0
+SET SCRIPTNAME=%~n0
+SET SCRIPTFULLFILENAME=%~dpnx0
+
 SET HELP=N
 SET WILDCARD=
 SET RECURSE=Y
@@ -64,10 +68,10 @@ GOTO :EOF
 
 
 :USAGE
-ECHO.%~n0 - CD to a folder based on first match of a file wildcard
+ECHO.%SCRIPTNAME% - CD to a folder based on first match of a file wildcard
 ECHO.
 ECHO.Usage:
-ECHO/%~n0 [wildcard] [options]
+ECHO.%SCRIPTNAME% [wildcard] [options]
 ECHO.
 ECHO.Options:
 ECHO./S     Recurse subdirectories (/S- to not)

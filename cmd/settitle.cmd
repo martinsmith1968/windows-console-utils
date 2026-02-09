@@ -3,6 +3,8 @@
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 SET SCRIPTPATH=%~dp0
+SET SCRIPTNAME=%~n0
+SET SCRIPTFULLFILENAME=%~dpnx0
 
 IF "%~1" == "" (
   CALL :USAGE
@@ -21,8 +23,8 @@ GOTO :EOF
 
 
 :USAGE
-ECHO.%~n0 - Set the Console Window Title (Allowing for ConEmu Admin consoles)
+ECHO.%SCRIPTNAME% - Set the Console Window Title (Allowing for ConEmu Admin consoles)
 ECHO.
-ECHO.%~n0 [title]
+ECHO.%SCRIPTNAME% [title]
 
 GOTO :EOF
