@@ -1,12 +1,12 @@
 @ECHO OFF
 
-FOR /F "tokens=1-3 delims=/-" %%a IN ('ShowDateTime -f yyyy-MM-dd') DO (
+FOR /F "tokens=1-3 delims=/-" %%a IN ('ShowDateTime -f "%%Y-%%m-%%d"') DO (
     SET CURRENTDATETIME_YEAR=%%a
     SET CURRENTDATETIME_MONTH=%%b
     SET CURRENTDATETIME_DAY=%%c
 )
 
-FOR /F "tokens=1-4 delims=/:" %%a IN ('ShowDateTime -f HH:mm:ss:000') DO (
+FOR /F "tokens=1-4 delims=/:" %%a IN ('ShowDateTime -f "%%H:%%M:%%S:{fff}"') DO (
     SET CURRENTDATETIME_HOUR=%%a
     SET CURRENTDATETIME_MINUTE=%%b
     SET CURRENTDATETIME_SECOND=%%c
