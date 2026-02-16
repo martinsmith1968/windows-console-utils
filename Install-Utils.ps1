@@ -571,6 +571,7 @@ New-FolderIfNotExists $targetFolder
 if (-Not (Test-Path $targetFolder)) {
     throw "Install path not found: ${targetFolder}"
 }
+[System.Environment]::SetEnvironmentVariable('UTILS', $targetFolder, [System.EnvironmentVariableTarget]::User)
 
 if ($osType -eq [OSType]::Any) {
     $osType = Get-OSType
