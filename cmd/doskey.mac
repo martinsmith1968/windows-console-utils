@@ -23,3 +23,4 @@ ups=PwRunner.cmd $*
 upy=PyRunner.cmd $*
 ce=ConEmu $*
 sw=stopwatch $*
+xp=explore $*
