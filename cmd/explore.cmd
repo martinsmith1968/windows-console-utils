@@ -23,12 +23,14 @@ SET TARGET=.
 SET EXTRA=
 
 REM Source : https://ss64.com/nt/shell.html
-SET KNOWNTARGETS1=startup:startup:common startup
-SET KNOWNTARGETS2=startmenu:start menu:common start menu
-SET KNOWNTARGETS3=programs:programs:common programs
-SET KNOWNTARGETS4=desktop:desktop:common desktop
-SET KNOWNTARGETS5=appdata:appdata:common appdata
-SET KNOWNTARGETS6=localappdata:local appdata:
+SET ALIASTARGETS1=startup:startup:common startup
+SET ALIASTARGETS2=startmenu:start menu:common start menu
+SET ALIASTARGETS3=programs:programs:common programs
+SET ALIASTARGETS4=desktop:desktop:common desktop
+SET ALIASTARGETS5=appdata:appdata:common appdata
+SET ALIASTARGETS6=localappdata:local appdata:
+SET ALIASTARGETS7=music:My Music:CommonMusic
+SET ALIASTARGETS8=pictures:PicturesLibrary:CommonPictures
 REM TODO: Add more known targets as needed
 
 REM **********************************************************************
@@ -61,8 +63,8 @@ IF /I "%~1" == "/tp"   SET SHELLTARGET=programs&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "-tp"   SET SHELLTARGET=programs&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "/td"   SET SHELLTARGET=desktop&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "-td"   SET SHELLTARGET=desktop&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "/ta"   SET SHELLTARGET=appdata&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "-ta"   SET SHELLTARGET=appdata&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/tad"  SET SHELLTARGET=appdata&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-tad"  SET SHELLTARGET=appdata&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "/tlad" SET SHELLTARGET=localappdata&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "-tlad" SET SHELLTARGET=localappdata&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "/tap"  SET SHELLTARGET=appsfolder&&SHIFT&&GOTO :PARSE
@@ -87,7 +89,7 @@ GOTO :EOF
 
 
 :VALIDATE
-CALL :SET_TARGET_FROM_KNOWN "%SHELLTARGET%" "%SHELLSOURCE%"
+CALL :SET_TARGET_FROM_ALIAS "%SHELLTARGET%" "%SHELLSOURCE%"
 IF "%TARGET%" == "" SET USAGE=Y
 
 IF "%USAGE%" == "Y" (
@@ -117,20 +119,20 @@ IF "%VERBOSE%" == "Y" (
 GOTO :EOF
 
 
-:SET_TARGET_FROM_KNOWN
+:SET_TARGET_FROM_ALIAS
 IF "%~1" == "" GOTO :EOF
 
-IF "%DEBUG%" == "Y" @ECHO.Setting target from known targets: %~1 %~2
+IF "%DEBUG%" == "Y" @ECHO.Setting target from alias targets: %~1 %~2
 
 SET INDEX=1
-:SET_TARGET_FROM_KNOWN_LOOP
-SET KNOWN=!KNOWNTARGETS%INDEX%!
-IF "%KNOWN%" == "" (
+:SET_TARGET_FROM_ALIAS_LOOP
+SET ALIAS=!ALIASTARGETS%INDEX%!
+IF "%ALIAS%" == "" (
     SET TARGET=shell:%~1
     GOTO :EOF
 )
 
-FOR /F "tokens=1,2,3 delims=:" %%A IN ("!KNOWN!") DO (
+FOR /F "tokens=1,2,3 delims=:" %%A IN ("!ALIAS!") DO (
     IF "%DEBUG%" == "Y" @ECHO.Found : %%A : %%B : %%C
     IF /I "%%A" == "%~1" (
         IF /I "%~2" == "common" (
@@ -143,7 +145,7 @@ FOR /F "tokens=1,2,3 delims=:" %%A IN ("!KNOWN!") DO (
 )
 
 SET /A INDEX+=1
-GOTO :SET_TARGET_FROM_KNOWN_LOOP
+GOTO :SET_TARGET_FROM_ALIAS_LOOP
 
 GOTO :EOF
 
@@ -154,9 +156,33 @@ ECHO.
 ECHO.Usage: %SCRIPTNAME% [target-directory] { [options] }
 ECHO.
 ECHO.Options:
-ECHO. /t  - Named Shell Target
-ECHO. /c  - Use the Common / Public version of the Shell Target
-ECHO. /n  - Use a New Explorer Window
+ECHO. /t [name] - Named Shell Target (See Notes)
+ECHO. /c        - Use the Common / Public version of the Shell Target
+ECHO. /n        - Use a New Explorer Window
+ECHO. /tst      - Shortcut for : /t startup
+ECHO. /tsm      - Shortcut for : /t startmenu
+ECHO. /tp       - Shortcut for : /t programs
+ECHO. /td       - Shortcut for : /t desktop
+ECHO. /tad      - Shortcut for : /t appdata
+ECHO. /tlad     - Shortcut for : /t localappdata
+ECHO. /tap      - Shortcut for : /t appsfolder
+ECHO.
+ECHO.Notes:
+ECHO. See: https://ss64.com/nt/shell.html for a list of known Shell Targets that can be used with the /t option.
+ECHO.
+ECHO.The following aliases also exist :
+
+SET INDEX=1
+:DISPLAY_ALIAS_LOOP
+SET ALIAS=!ALIASTARGETS%INDEX%!
+IF "%ALIAS%" == "" GOTO :EOF
+
+FOR /F "tokens=1,2,3 delims=:" %%A IN ("!ALIAS!") DO (
+    ECHO. %%A : User: %%B [Common: %%C]
+)
+
+SET /A INDEX+=1
+GOTO :DISPLAY_ALIAS_LOOP
 
 GOTO :EOF
 
