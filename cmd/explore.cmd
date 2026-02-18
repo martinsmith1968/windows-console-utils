@@ -65,8 +65,8 @@ IF /I "%~1" == "/ta"   SET SHELLTARGET=appdata&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "-ta"   SET SHELLTARGET=appdata&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "/tlad" SET SHELLTARGET=localappdata&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "-tlad" SET SHELLTARGET=localappdata&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "/tlap" SET SHELLTARGET=appsfolder&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "-tlap" SET SHELLTARGET=appsfolder&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/tap"  SET SHELLTARGET=appsfolder&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-tap"  SET SHELLTARGET=appsfolder&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "/c"    SET SHELLSOURCE=common&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "-c"    SET SHELLSOURCE=common&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "/p"    SET SHELLSOURCE=common&&SHIFT&&GOTO :PARSE
