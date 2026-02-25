@@ -503,14 +503,13 @@ $defined_apps = @(
     ,[AppDefinition]::new("Nano.Text.Editor.Syntax",        "Standard",   [OSType]::x32, "apps\nano",                                                "*win32*.zip",             "bin",                      [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractWildcard = "syntax\*" })
     ,[AppDefinition]::new("Nano.Text.Editor",               "Standard",   [OSType]::x64, "apps\nano",                                                "*win64*.zip",             "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes, [InstallAction]::RenameLicence, [InstallAction]::RenameFAQ ), @{ [InstallParameter]::ExtractCommand = "e" })
     ,[AppDefinition]::new("Nano.Text.Editor.Syntax",        "Standard",   [OSType]::x64, "apps\nano",                                                "*win64*.zip",             "bin",                      [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractWildcard = "syntax\*" })
-    ,[AppDefinition]::new("VerPatch",                       "Standard",   [OSType]::Any, "apps\ddbug",                                               "*.zip",                   "bin",                      [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractWildcard = "*.exe" })
     ,[AppDefinition]::new("Find.and.Replace.Tool",          "Standard",   [OSType]::Any, "apps\fart",                                                "*.zip",                   "bin",                      [InstallType]::ExtractZip)
     ,[AppDefinition]::new("MiniTrue",                       "Standard",   [OSType]::Any, "apps\minitrue",                                            "*.zip",                   "bin",                      [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractWildcard = "*.exe" })
     ,[AppDefinition]::new("XD.2.Markdown",                  "Developer",  [OSType]::Any, "apps\formix",                                              "*.zip",                   "bin",                      [InstallType]::ExtractZip)
     ,[AppDefinition]::new("AutoHotKey",                     "Developer",  [OSType]::Any, "apps\AutoHotKey",                                          "*.zip",                   "AutoHotKey",               [InstallType]::ExtractZip)
     ,[AppDefinition]::new("JSON.Query.Tool",                "Standard",   [OSType]::x32, "apps\jq\x32",                                              "*.exe",                   "bin",                      [InstallType]::CopyFiles,  @{ [InstallParameter]::RenameTarget = "jq-*.exe=jq.exe" })
     ,[AppDefinition]::new("JSON.Query.Tool",                "Standard",   [OSType]::x64, "apps\jq\x64",                                              "*.exe",                   "bin",                      [InstallType]::CopyFiles,  @{ [InstallParameter]::RenameTarget = "jq-*.exe=jq.exe" })
-    ,[AppDefinition]::new("XML Query Tool",                 "Standard",   [OSType]::Any, "apps\xq",                                                  "*.zip",                   "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes, [InstallAction]::RenameLicence ))
+    ,[AppDefinition]::new("XML.Query.Tool",                 "Standard",   [OSType]::Any, "apps\xq",                                                  "*.zip",                   "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes, [InstallAction]::RenameLicence ))
     ,[AppDefinition]::new("YAML.Query.Tool",                "Standard",   [OSType]::x32, "apps\yq\x32",                                              "*.zip",                   "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes, [InstallAction]::RenameLicence ))
     ,[AppDefinition]::new("YAML.Query.Tool",                "Standard",   [OSType]::x64, "apps\yq\x64",                                              "*.zip",                   "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes, [InstallAction]::RenameLicence ))
     ,[AppDefinition]::new("Naughter.ShelExec",              "Standard",   [OSType]::x64, "apps\naughter",                                            "shelexec.zip",            "bin",                      [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ExtractWildcard = "ReleaseU64C\*.exe" })
@@ -553,6 +552,32 @@ $defined_apps = @(
 
     ,[AppDefinition]::new("Login.Script",                   "Essentials", [OSType]::Any, "",                                                         "Login.cmd",               "",                         [InstallType]::None, @{ [InstallParameter]::ShortcutFilenames = "Login.cmd=Login Script" ; [InstallParameter]::ShortcutTarget = "shell:startup" })
 )
+
+#------------------------------------------------------------------------------------------------------------------------
+# Validate
+$app_keys = @{ }
+foreach($defined_app in $defined_apps) {
+    if ($defined_app.Id -like "* *") {
+        throw "Invalid App Id: $($defined_app.Id) - $($defined_app.SourceFolder)"
+    }
+
+    $key = $defined_app.Id + "|" + $defined_app.OSType.ToString()
+    if ($app_keys.ContainsKey($key)) {
+        $app_keys[$key]++
+    } else {
+        $app_keys[$key] = 1
+    }
+}
+
+$duplicates = $app_keys.GetEnumerator() | Where-Object { $_.Value -gt 1 }
+if ($duplicates.Count -gt 0) {
+    $dup_app_names = @()
+    foreach($duplicate in $duplicates) {
+        $dup_app_names += $duplicate.Key
+    }
+    $message = "Duplicate App Id(s) found: " + ($dup_app_names -join ", ")
+    throw $message
+}
 
 
 #------------------------------------------------------------------------------------------------------------------------
