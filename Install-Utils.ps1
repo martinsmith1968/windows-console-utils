@@ -460,12 +460,19 @@ class AppDefinition{
                     $fileName = $shortcutFileNameAndName[0]
                     $name = $shortcutFileNameAndName[1]
 
+                    $description = ""
+                    if ($name.Contains(":")) {
+                        $nameParts = $name.Split(":")
+                        $name        = $nameParts[0]
+                        $description = $nameParts[1]
+                    }
+
                     $targetFileNames = Get-ChildItem -Path $targetPath -Filter $fileName
                     foreach($targetFileName in $targetFileNames) {
                         $shortcutCommand = Join-Path $baseTargetFolder "bin" "shortcut32.exe"
                         $shortcutFileName = Join-Path $shortcutPath ($name + ".lnk")
                         $shortcutTargetFileName = $targetFileName.FullName
-                        $arguments = "/F:""${shortcutFileName}"" /A:Create /T:""${shortcutTargetFileName}"""
+                        $arguments = "/F:""${shortcutFileName}"" /A:Create /T:""${shortcutTargetFileName}"" /D:""${description}"""
                         Write-Log "-- Creating Shortcut: ${shortcutFileName} - ${shortcutTargetFileName}"
                         Invoke-ExecuteProcess $shortcutCommand $arguments $verbose
                     }
