@@ -10,33 +10,30 @@ SET HELP=N
 SET WILDCARD=
 SET RECURSE=Y
 
-SET POSITION=1
+SET FOUND=
+SET TARGETINDEX=1
+
+SET POSITION=0
 
 :PARSEARGS
-IF /I "%~1" == "/?" (
-    SET HELP=Y
-    SHIFT
-    GOTO :PARSEARGS
-)
-IF /I "%~1" == "/S" (
-    SET RECURSE=Y
-    SHIFT
-    GOTO :PARSEARGS
-)
-IF /I "%~1" == "/S-" (
-    SET RECURSE=N
-    SHIFT
-    GOTO :PARSEARGS
-)
+IF "%~1" == "" GOTO :VALIDATE
+IF /I "%~1" == "/?"  SET HELP=Y&& SHIFT && GOTO :PARSEARGS
+IF /I "%~1" == "-?"  SET HELP=Y&& SHIFT && GOTO :PARSEARGS
+IF /I "%~1" == "/S"  SET RECURSE=Y&& SHIFT && GOTO :PARSEARGS
+IF /I "%~1" == "-S"  SET RECURSE=Y&& SHIFT && GOTO :PARSEARGS
+IF /I "%~1" == "/S-" SET RECURSE=N&& SHIFT && GOTO :PARSEARGS
+IF /I "%~1" == "-S-" SET RECURSE=N&& SHIFT && GOTO :PARSEARGS
 
-IF NOT "%~1" == "" (
-  IF %POSITION% EQU 1 SET WILDCARD=*.%~1
-  
-  SET /A POSITION+=1
-  SHIFT
-  GOTO :PARSEARGS
-)
+SET /A POSITION+=1
+IF %POSITION% EQU 1 SET WILDCARD=*.%~1&& SHIFT && GOTO :PARSEARGS
+IF %POSITION% EQU 2 SET TARGETINDEX=%~1&& SHIFT && GOTO :PARSEARGS
 
+CALL :USAGE
+CALL :ERROR "Invalid argument at position %POSITION%: %~1"
+GOTO :EOF
+
+
+:VALIDATE
 IF /I "%HELP%" == "Y" (
   CALL :USAGE
   GOTO :EOF
@@ -47,23 +44,25 @@ IF "%WILDCARD%" == "" (
   GOTO :EOF
 )
 
+SET INDEX=0
 FOR /R %%F IN (%WILDCARD%) DO (
-  ECHO.Found: %%~dpnxF
-  ENDLOCAL && CD /D "%%~dpF"
-  GOTO :EXIT
+  SET /A INDEX += 1
+  ECHO.!INDEX!: Found: %%~dpnxF
+  IF !INDEX! EQU %TARGETINDEX% SET FOUND=%%~dpF&& GOTO :FOUND
 )
+
+:FOUND
+IF "%FOUND%" == "" (
+  CALL :ERROR No match found for wildcard: %WILDCARD%, index: %TARGETINDEX%
+  GOTO :EOF
+)
+
+ECHO.Changing to: %FOUND%
+ENDLOCAL && CD /D "%FOUND%"
+GOTO :EXIT
 
 :EXIT
 EXIT /B
-GOTO :EOF
-
-
-:CD
-ENDLOCAL
-@ECHO ON
-ECHO.Changing to: %~1
-CD /D "%~1"
-
 GOTO :EOF
 
 
@@ -71,10 +70,14 @@ GOTO :EOF
 ECHO.%SCRIPTNAME% - CD to a folder based on first match of a file wildcard
 ECHO.
 ECHO.Usage:
-ECHO.%SCRIPTNAME% [wildcard] [options]
+ECHO.%SCRIPTNAME% [wildcard] { [target-index:1] [options] }
 ECHO.
 ECHO.Options:
-ECHO./S     Recurse subdirectories (/S- to not)
+ECHO./S     Recurse subdirectories (/S- to disable)
+ECHO.
+ECHO.Example(s):
+ECHO.%SCRIPTNAME% *.txt
+ECHO.%SCRIPTNAME% *.exe 3
 
 GOTO :EOF
 
