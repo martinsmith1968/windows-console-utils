@@ -1,6 +1,6 @@
 @ECHO OFF
 
-SETLOCAL
+SETLOCAL EnableDelayedExpansion
 
 SET SCRIPTPATH=%~dp0
 SET SCRIPTNAME=%~n0
@@ -46,7 +46,7 @@ IF "%WILDCARD%" == "" (
 
 SET INDEX=0
 FOR /R %%F IN (%WILDCARD%) DO (
-  SET /A INDEX += 1
+  SET /A INDEX+=1
   ECHO.!INDEX!: Found: %%~dpnxF
   IF !INDEX! EQU %TARGETINDEX% SET FOUND=%%~dpF&& GOTO :FOUND
 )
@@ -70,14 +70,14 @@ GOTO :EOF
 ECHO.%SCRIPTNAME% - CD to a folder based on first match of a file wildcard
 ECHO.
 ECHO.Usage:
-ECHO.%SCRIPTNAME% [wildcard] { [target-index:1] [options] }
+ECHO.%SCRIPTNAME% [wildcard] { [target-index:%TARGETINDEX%] [options] }
 ECHO.
 ECHO.Options:
 ECHO./S     Recurse subdirectories (/S- to disable)
 ECHO.
 ECHO.Example(s):
-ECHO.%SCRIPTNAME% *.txt
-ECHO.%SCRIPTNAME% *.exe 3
+ECHO.%SCRIPTNAME% txt
+ECHO.%SCRIPTNAME% exe 3
 
 GOTO :EOF
 
