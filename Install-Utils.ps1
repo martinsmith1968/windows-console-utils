@@ -530,6 +530,7 @@ $defined_apps = @(
     ,[AppDefinition]::new("Microsoft.SysInternals",         "Standard",   [OSType]::Any, "apps\Microsoft\SysInternals",                              "*.zip",                   "sysinternals",             [InstallType]::ExtractZip)
     ,[AppDefinition]::new("Microsoft.Win2000.Resource.Kit", "Standard",   [OSType]::Any, "apps\Microsoft\Win2000ResourceKit",                        "*.zip",                   "bin",                      [InstallType]::ExtractZip)
     ,[AppDefinition]::new("XmlStarlet",                     "Standard",   [OSType]::Any, "apps\xmlstarlet",                                          "*.zip",                   "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ), @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ExtractWildcard = "**\*.exe **\readme **\doc\*.txt" })
+    ,[AppDefinition]::new("WhyIsThatRunning",               "Standard",   [OSType]::Any, "apps\WhyIsThatRunning",                                    "witr*.zip",               "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes, [InstallAction]::RenameLicence ))
 
     # Wndows Apps
     ,[AppDefinition]::new("WindowExtensions",               "Standard",   [OSType]::Any, "apps-win\martinsmith1968\WindowExtensions",                "*.zip",                   "mswin\WindowExtensions",   [InstallType]::ExtractZip, @{ [InstallParameter]::ShortcutFilenames = "WindowExtensions.exe=Window Extensions" ; [InstallParameter]::ShortcutTarget = "shell:startup" })
