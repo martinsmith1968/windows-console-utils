@@ -4,7 +4,7 @@ SETLOCAL EnableDelayedExpansion
 
 CALL GetDateTime.cmd
 
-SET POS=0
+SET ARGPOS=0
 
 SET BASEPATH=
 SET APPNAME=
@@ -21,77 +21,43 @@ SET WAIT=5
 SET DEBUG=N
 
 :PARSE
-IF /I "%~1" == "-X" (
-  SET DEBUG=Y
-)
-IF /I "%~1" == "-B" (
-  SET BASEPATH=%~2
-  SHIFT && SHIFT
-  GOTO :PARSE
-)
-IF /I "%~1" == "-A" (
-  SET APPNAME=%~2
-  SHIFT && SHIFT
-  GOTO :PARSE
-)
-IF /I "%~1" == "-D" (
-  SET APPDESCRIPTION=%~2
-  SHIFT && SHIFT
-  GOTO :PARSE
-)
-IF /I "%~1" == "-F" (
-  SET APPFILENAME=%~2
-  SHIFT && SHIFT
-  GOTO :PARSE
-)
-IF /I "%~1" == "-E" (
-  SET EXEFILENAME=%~2
-  SHIFT && SHIFT
-  GOTO :PARSE
-)
-IF /I "%~1" == "-I" (
-  SET ICONFILENAME=%~2
-  SHIFT && SHIFT
-  GOTO :PARSE
-)
-IF /I "%~1" == "-CO" (
-  SET COMPANY=%~2
-  SHIFT && SHIFT
-  GOTO :PARSE
-)
-IF /I "%~1" == "-CP" (
-  SET COPYRIGHT=%~2
-  SHIFT && SHIFT
-  GOTO :PARSE
-)
-IF /I "%~1" == "-CM" (
-  SET COMMENT=%~2
-  SHIFT && SHIFT
-  GOTO :PARSE
-)
-IF /I "%~1" == "-V" (
-  SET APPVERSION=%~2
-  SHIFT && SHIFT
-  GOTO :PARSE
-)
-IF /I "%~1" == "-W" (
-  SET WAIT=%~2
-  SHIFT && SHIFT
-  GOTO :PARSE
-)
+IF "%~1" == "" GOTO :VALIDATE
+IF /I "%~1" == "-X"  SET DEBUG=Y&& SHIFT && GOTO :PARSE
+IF /I "%~1" == "-B"  SET BASEPATH=%~2&&SHIFT && SHIFT && GOTO :PARSE
+IF /I "%~1" == "-A"  SET APPNAME=%~2&& SHIFT && SHIFT && GOTO :PARSE
+IF /I "%~1" == "-D"  SET APPDESCRIPTION=%~2&& SHIFT && SHIFT && GOTO :PARSE
+IF /I "%~1" == "-F"  SET APPFILENAME=%~2&& SHIFT && SHIFT && GOTO :PARSE
+IF /I "%~1" == "-E"  SET EXEFILENAME=%~2&& SHIFT && SHIFT && GOTO :PARSE
+IF /I "%~1" == "-I"  SET ICONFILENAME=%~2&& SHIFT && SHIFT && GOTO :PARSE
+IF /I "%~1" == "-CO" SET COMPANY=%~2&& SHIFT && SHIFT && GOTO :PARSE
+IF /I "%~1" == "-CP" SET COPYRIGHT=%~2&& SHIFT && SHIFT && GOTO :PARSE
+IF /I "%~1" == "-CM" SET COMMENT=%~2&& SHIFT && SHIFT && GOTO :PARSE
+IF /I "%~1" == "-V"  SET APPVERSION=%~2&& SHIFT && SHIFT && GOTO :PARSE
+IF /I "%~1" == "-W"  SET WAIT=%~2&& SHIFT && SHIFT && GOTO :PARSE
 
-IF NOT "%~1" == "" (
-  REM *** POSITIONAL PARAMETERS HERE
-  SHIFT
-  GOTO :PARSE
-)
+SET /A ARGPOS += 1
+
+IF %ARGPOS% EQU 1 
+
+CALL :USAGE
+CALL :ERROR "Unknown argument at position %ARGPOS%: %~1"
+GOTO :EOF
+
 
 :VALIDATE
-IF NOT EXIST "%APPFILENAME%" (
-  ECHO.App script filename not found : %APPFILENAME%
+IF "%APPFILENAME%" == "" (
+  CALL :USAGE
+  CALL :ERROR "App script filename is required"
   GOTO :EOF
 )
 
+IF NOT EXIST "%APPFILENAME%" (
+  CALL :ERROR "App script filename not found : %APPFILENAME%"
+  GOTO :EOF
+)
+
+
+:START
 CALL FINDAPP.CMD AutoHotKey Compiler Ahk2Exe.exe
 SET AHKCOMPILEREXE=%APP%
 IF NOT EXIST "%APP%" (

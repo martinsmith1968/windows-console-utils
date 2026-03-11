@@ -40,7 +40,7 @@ GOTO :EOF
 
 :VALIDATE
 IF "%HELP%" == "Y" CALL :USAGE && GOTO :EOF
-IF "%CMD%" == "" CALL :USAGE && CALL :ERROR "No command specified." && GOTO :EOF
+IF "%CMD%" == "" CALL :USAGE "No command specified." && GOTO :EOF
 
 @IF "%DEBUG%" == "Y" @ECHO ON
 "%NIRCMD%" clipboard "%CMD%" "%ARG1%"
@@ -84,9 +84,14 @@ ECHO. PATH [filename]     - Set the Path of the filename on the clipboard
 ECHO. READ [filename]     - Read the text from [filename] onto the clipboard
 ECHO. SAVE [filename]     - Save the text from the clipboard into [filename]
 
+IF NOT "%~1" == "" (
+    ECHO.
+    CALL :ERROR "%~1"
+)
+
 GOTO :EOF
 
 
 :ERROR
-ECHO.Error: %*
+ECHO.ERROR: %~1
 GOTO :EOF
