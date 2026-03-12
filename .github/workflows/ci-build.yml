@@ -126,6 +126,7 @@ jobs:
       release_is_prerelease: ${{ env.release_is_prerelease }}
       release_modifier: ${{ env.release_modifier }}
       changelog_mode: ${{ env.changelog_mode }}
+      artifact_name: ${{ env.PRODUCT_NAME }}_${{ env.executable_version }}.zip
 
 
   ##########################################################
@@ -133,7 +134,7 @@ jobs:
   build:
     name: Build
     needs: setup
-    runs-on: windows-latest
+    runs-on: windows-2022
 
     steps:
     - name: Checkout
@@ -144,7 +145,7 @@ jobs:
       run: |
         $input_folder    = "${{ github.workspace }}"
         $output_folder   = Join-Path "${{ github.workspace }}" "${{ env.BUILD_OUTPUTFOLDER }}"
-        $output_filename = "${{ env.PRODUCT_NAME }}_${{ needs.setup.outputs.executable_version }}.zip"
+        $output_filename = "${{ needs.setup.outputs.artifact_name }}"
         $output_file     = Join-Path $output_folder $output_filename
 
         Write-Host "Input Folder   : $input_folder"
@@ -197,7 +198,7 @@ jobs:
 
     name: Install - ${{ matrix.group }} - ${{ matrix.osType }}
     needs: build
-    runs-on: windows-latest
+    runs-on: windows-2022
 
     steps:
     - name: Checkout
@@ -213,6 +214,7 @@ jobs:
       shell: pwsh
       run: |
         $targetFolder = Join-Path "${{ github.workspace }}" "Install" "${{ matrix.group }}" "${{ matrix.osType }}"
+        New-Item -Path $targetFolder -ItemType Directory -Force
 
         Write-Host "**********************************************************************"
         Write-Host "** Installing Windows Console Utils"
@@ -293,4 +295,4 @@ jobs:
         draft: ${{ needs.setup.outputs.release_is_draft }}
         prerelease: ${{ needs.setup.outputs.release_is_prerelease }}
         removeArtifacts: true
-        artifacts: '**/*.zip'
+        artifacts: '${{ needs.setup.outputs.artifact_name }}'
