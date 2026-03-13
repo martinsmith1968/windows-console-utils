@@ -1,0 +1,7 @@
+@ECHO OFF
+
+SETLOCAL
+
+SET SCRIPTPATH=%~dp0
+
+COPY /B /Y /V "%SCRIPTPATH%\Setup\git\*" "%SCRIPTPATH%\.git.hooks"

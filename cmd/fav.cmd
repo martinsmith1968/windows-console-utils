@@ -1,12 +1,6 @@
 @ECHO OFF
 
 REM **********************************************************************
-REM ** Needs GnuUtils installed in order to work:
-REM ** - PRINTF
-REM ** - SED
-REM **********************************************************************
-
-REM **********************************************************************
 REM ** TODO
 REM **
 REM ** - Partial match shouldn't find first match but should show which
@@ -24,7 +18,6 @@ FOR %%* IN (.) DO SET CURRENTDIR=%%~dpnx*
 FOR %%* IN (.) DO SET CURRENTDIRNAME=%%~nx*
 
 SET DEBUGON=N
-REM SET DEBUGON=Y
 
 SET NEWDIR=#
 SET DELIM=#
@@ -63,8 +56,8 @@ IF /I "%~1" == "/?"     SET TARGET=USAGE
 IF /I "%~1" == "--HELP" SET TARGET=USAGE
 IF /I "%~1" == "EXPORT" SET TARGET=EXPORT
 IF /I "%~1" == "NPP"    SET TARGET=NPP
-IF /I "%~1" == "LOCAL"  SET TARGET=CUSTOMISELOCAL && SET ARG1=%CD%
-IF /I "%~1" == "."      SET TARGET=CUSTOMISELOCAL && SET ARG1=%CD%
+IF /I "%~1" == "LOCAL"  SET TARGET=CUSTOMISELOCAL&& SET ARG1=%CD%
+IF /I "%~1" == "."      SET TARGET=CUSTOMISELOCAL&& SET ARG1=%CD%
 
 IF "%TARGET%" == "#" (
     IF NOT "%~1" == "" (
@@ -219,7 +212,7 @@ IF "%EXISTS%" == "N" (
 
 CALL :UpCase ALIAS
 
-SED -e "/^%ALIAS%%DELIM%/d" "%DATAFILE%" > "%DATAFILEBACKUP%"
+FINDSTR /v /b "%ALIAS%%DELIM%" "%DATAFILE%" > "%DATAFILEBACKUP%"
 CALL :RESTOREDATA
 CALL :REORDER
 
@@ -231,10 +224,8 @@ GOTO :EOF
 :VIEW
 :LIST
 :SHOW
-CALL :HEADER
-
-CALL :SHOWITEM "DataFile: %DATAFILE%"
-CALL :SHOWITEM ""
+CALL :SHOWHEADER
+CALL :SHOWDATAFILENAME
 
 SET UNDERLINE1=
 FOR /L %%I IN (1, 1, %MAXNAMELEN%) DO SET UNDERLINE1=!UNDERLINE1!-
@@ -243,7 +234,7 @@ SET UNDERLINE2=
 FOR /L %%I IN (1, 1, %MAXDESCLEN%) DO SET UNDERLINE2=!UNDERLINE2!-
 
 CALL :SHOWITEM "Alias" "Directory" "#"
-CALL :SHOWITEM "%UNDERLINE1%" "%UNDERLINE2%" "-"
+ECHO.%UNDERLINE1% - %UNDERLINE2%
 FOR /F "usebackq tokens=1,2* delims=%DELIM%" %%A IN ("%DATAFILE%") DO (
     CALL :SHOWALIAS "%%A" "%%B"
 )
@@ -277,7 +268,7 @@ GOTO :EOF
 
 
 :SHOWITEM
-PRINTF "%%-%MAXNAMELEN%s %%1s %%s\n" "%~1" "%~3" "%~2 "
+PRINTFORMAT "{0,-%MAXNAMELEN%} {1,1} {2}" "%~1" "%~3" "%~2 "
 
 GOTO :EOF
 
@@ -450,7 +441,7 @@ IF EXIST "%DATAFILE%" (
 GOTO :EOF
 
 
-:HEADER
+:SHOWHEADER
 CALL "%SCRIPTPATH%\GetDateTime.cmd"
 
 ECHO.%SCRIPTNAME% - Control favourite folders
@@ -460,9 +451,16 @@ ECHO.
 GOTO :EOF
 
 
+:SHOWDATAFILENAME
+ECHO.DataFile: %DATAFILE%
+ECHO.
+
+GOTO :EOF
+
+
 :HELP
 :USAGE
-CALL :HEADER
+CALL :SHOWHEADER
 ECHO.Usage:
 ECHO.%SCRIPTNAME% [ add / del / set / list / where / export / npp / {alias-name} ] {options}
 ECHO.
@@ -476,7 +474,7 @@ ECHO.
 ECHO.list - list favourite folders
 ECHO.E.g. %SCRIPTNAME% list
 ECHO.
-ECHO.DataFile: %DATAFILE%
+CALL :SHOWDATAFILENAME
 
 IF NOT "%~1" == "" (
     CALL :ERROR: "%~1"
@@ -522,10 +520,9 @@ GOTO:EOF
 
 
 :strlen string len
-SETLOCAL EnableDelayedExpansion
 SET "token=#%~1" & SET "len=0"
 FOR /L %%A IN (12,-1,0) DO (
     SET /A "len|=1<<%%A"
     FOR %%B IN (!len!) DO IF "!token:~%%B,1!"=="" SET /A "len&=~1<<%%A"
 )
-ENDLOCAL & SET %~2=%len%
+SET %~2=%len%
