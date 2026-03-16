@@ -1,0 +1,12 @@
+{
+  "Id": "My Native Console Apps",
+  "GroupName": "Essentials",
+  "OsType": "x64",
+  "SourceFolder": "apps\\martinsmith1968\\NativeWindowsConsoleApplicationsCPP",
+  "SourceWildcard": "*.zip",
+  "TargetFolder": "msbin",
+  "InstallType": "ExtractZip",
+  "Actions": [
+    "RenameReadmes"
+  ]
+}
