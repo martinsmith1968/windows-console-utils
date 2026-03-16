@@ -1,7 +1,7 @@
 {
   "Version": 1,
   "FileName": "ClearBank.calendarset",
-  "FullFileName": "C:\\Utils\\Data\\ClearBank.calendarset",
+  "FullFileName": "C:\\utils\\Data\\QuickCalendar\\ClearBank.calendarset",
   "Description": "A Calendar of Sprint Dates",
   "DisplayFontName": "Segoe UI",
   "DisplayFontSize": 9.0,
@@ -27,6 +27,8 @@
           "Value": 14,
           "IntervalPeriodType": "Days"
         },
+        "SequenceStart": 1,
+        "SequenceIncrement": 1,
         "GeneratorTypeName": "StartDateEndDate",
         "DescriptionTemplate": "Sprint {yyyy.MM.dd}"
       },
@@ -37,6 +39,8 @@
           "Value": 14,
           "IntervalPeriodType": "Days"
         },
+        "SequenceStart": 1,
+        "SequenceIncrement": 1,
         "GeneratorTypeName": "StartDateEndDate",
         "DescriptionTemplate": "Sprint {yyyy}.{sequence:00}"
       },
@@ -47,6 +51,8 @@
           "Value": 14,
           "IntervalPeriodType": "Days"
         },
+        "SequenceStart": 1,
+        "SequenceIncrement": 1,
         "GeneratorTypeName": "StartDateEndDate",
         "DescriptionTemplate": "Sprint {yyyy}.{sequence:00}"
       },
@@ -57,6 +63,8 @@
           "Value": 14,
           "IntervalPeriodType": "Days"
         },
+        "SequenceStart": 1,
+        "SequenceIncrement": 1,
         "GeneratorTypeName": "StartDateEndDate",
         "DescriptionTemplate": "Sprint {yyyy}.{sequence:00}"
       },
@@ -67,6 +75,8 @@
           "Value": 14,
           "IntervalPeriodType": "Days"
         },
+        "SequenceStart": 1,
+        "SequenceIncrement": 1,
         "GeneratorTypeName": "StartDateEndDate",
         "DescriptionTemplate": "Sprint {yyyy}.{sequence:00}"
       },
@@ -77,6 +87,8 @@
           "Value": 14,
           "IntervalPeriodType": "Days"
         },
+        "SequenceStart": 1,
+        "SequenceIncrement": 1,
         "GeneratorTypeName": "StartDateEndDate",
         "DescriptionTemplate": "Sprint {yyyy}.{sequence:00}"
       }

@@ -36,7 +36,7 @@ if ($items.Count -gt 0) {
         $partIndex = 0
         foreach ($part in $parts) {
             ++$partIndex
-            Write-Host "${index}.${partIndex}: $($part.FullName) - $($part.Length)"
+            Write-Host "${index}.${partIndex}: $($part.FullName) - $($part.Length.ToString('#,##0'))"
         }
     }
 }
