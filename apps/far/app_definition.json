@@ -1,0 +1,26 @@
+[
+  {
+    "Id": "FAR File Manager",
+    "GroupName": "Standard",
+    "OsType": "x32",
+    "SourceFolder": "apps\\far",
+    "SourceWildcard": "*x86*.7z",
+    "TargetFolder": "bin\\far",
+    "InstallType": "ExtractZip",
+    "Parameters": {
+      "ExtractCommand": "e"
+    }
+  },
+  {
+    "Id": "FAR File Manager",
+    "GroupName": "Standard",
+    "OsType": "x64",
+    "SourceFolder": "apps\\far",
+    "SourceWildcard": "*x64*.7z",
+    "TargetFolder": "bin\\far",
+    "InstallType": "ExtractZip",
+    "Parameters": {
+      "ExtractCommand": "e"
+    }
+  }
+]
