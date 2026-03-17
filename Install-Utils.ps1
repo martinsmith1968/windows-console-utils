@@ -95,6 +95,8 @@ enum InstallType {
     CopyFiles
     ExtractZip
     InstallCmd
+    winget
+    choco
 }
 
 enum OSType {
