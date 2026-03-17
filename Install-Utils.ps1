@@ -688,6 +688,9 @@ if ($modifyPath) {
     $utilsPaths += (Join-Path $targetFolder "gnuwin32" "bin")
     $utilsPaths += (Join-Path $targetFolder "gnuwin32" "sbin")
     $utilsPaths += (Join-Path $targetFolder "sysinternals")
+    if (Test-Path -Path (Join-Path $targetFolder "Custom")) {
+        $utilsPaths += (Join-Path $targetFolder "Custom")
+    }
 
     Write-Log "-- Retrieving existing PATH"
     $existingPath = ([System.Environment]::GetEnvironmentVariable('PATH', [System.EnvironmentVariableTarget]::User))
