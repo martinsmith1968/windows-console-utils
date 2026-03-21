@@ -1,0 +1,32 @@
+{
+  "Version": 1,
+  "FileName": "Personal.calendarset",
+  "FullFileName": "C:\\utils\\Data\\QuickCalendar\\Personal.calendarset",
+  "Description": "Personal Dates and Reminders",
+  "DisplayFontName": "Segoe UI",
+  "DisplayFontSize": 9.0,
+  "MinimumDate": "1753-01-01T00:00:00",
+  "MaximumDate": "9998-12-31T00:00:00",
+  "DateDisplayFormat": "yyyy-MM-dd",
+  "VisualDetails": {
+    "ShowWeekNumbers": true,
+    "ShowToday": true,
+    "ShowTodayCircle": true,
+    "FirstDayOfWeek": "Monday",
+    "VisibleDimensions": "4, 3",
+    "FirstVisibleMonth": 1,
+    "WindowStartLocation": "Manual",
+    "ManualWindowLocation": "3079, 224"
+  },
+  "Dates": {
+    "DatesGenerators": [
+      {
+        "Date": "2026-08-11T00:00:00",
+        "GeneratorTypeName": "FixedDate",
+        "DescriptionTemplate": "Martin Birthday {totalyears:0}"
+      }
+    ],
+    "MonthlyDatesGenerators": [],
+    "AnnualDatesGenerators": []
+  }
+}

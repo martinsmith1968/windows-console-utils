@@ -25,11 +25,13 @@ param (
    ,[switch][bool]$debug        = $false
 )
 
+. $PSScriptRoot\Include-Scripts.ps1
+
 $modifyPath = !$noModifyPath
 $verbose = !$quiet
 
 if ($debug) {
-    Write-Host "----------------------------------------"
+    Write-SeparatorLine
     Write-Host "command:      $command"
     Write-Host "targetFolder: $targetFolder"
     Write-Host "osType:       $osType"
@@ -41,14 +43,14 @@ if ($debug) {
     Write-Host "debug:        $debug"
 
     if ($groups.Count -gt 0) {
-        Write-Host "----------------------------------------"
+        Write-SeparatorLine
         $groupCount = 0
         foreach($group in $groups) {
             ++$groupCount
             Write-Host "Group ${groupCount}: $group"
         }
     }
-    Write-Host "----------------------------------------"
+    Write-SeparatorLine
 }
 $groups += "Mandatory"
 
@@ -86,6 +88,12 @@ $groups += "Mandatory"
 #------------------------------------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------------------------------------
+enum CommandType {
+    Install
+    ListApps
+    ListGroups
+}
+
 enum InstallType {
     None
     CopyFiles
@@ -107,6 +115,8 @@ enum InstallAction
     RenameNews
     ClearTargetFolder
     RelocateTargetToParent
+    OverwriteExisting
+    SkipOverwriteExisting
 }
 
 enum InstallParameter {
@@ -194,6 +204,7 @@ function ApplyStandardShortcutMenu([hashtable]$parameters) {
 # AppDefinition class
 class AppDefinition{
     [string]$Id
+    [string]$Description
     [string]$GroupName
     [OSType]$OSType
     [string]$SourceFolder
@@ -350,6 +361,13 @@ class AppDefinition{
 
                     $commandFullName = Join-Path $baseTargetFolder "bin" "7za.exe"
                     $arguments = " ""$($sourceFile.FullName)"" -o""${targetPath}"" -y -bd -bb2"
+                    if ($this.Actions.Contains([InstallAction]::OverwriteExisting)) {
+                        $arguments += " -aoa"
+                    } elseif ($this.Actions.Contains([InstallAction]::SkipOverwriteExisting)) {
+                        $arguments += " -aos"
+                    } else {
+                        $arguments += " -aou"
+                    }
 
                     $command = "x"
                     if ($this.Parameters.ContainsKey([InstallParameter]::ExtractCommand)) {
@@ -531,9 +549,10 @@ $defined_apps = @(
 
     # Command Line Apps
     ,[AppDefinition]::new("7za command",                    "Mandatory",  [OSType]::Any, "apps\7zip\x64",                                            "*.exe",                   "bin",                      [InstallType]::CopyFiles)
-    ,[AppDefinition]::new("My Native Console Apps - C++",   "Mandatory",  [OSType]::x64, "apps\martinsmith1968\NativeWindowsConsoleApplicationsCPP", "*.zip",                   "msbin",                    [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ))
-    ,[AppDefinition]::new("My Native Console Apps - C#",    "Mandatory",  [OSType]::x64, "apps\martinsmith1968\ConsoleApplications",                 "*.zip",                   "msbin",                    [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ))
-    ,[AppDefinition]::new("My Legacy Console Apps",         "Mandatory",  [OSType]::Any, "apps\martinsmith1968\legacy",                              "*.*",                     "msbin",                    [InstallType]::CopyFiles)
+    ,[AppDefinition]::new("OptimumX Console Apps",          "Mandatory",  [OSType]::Any, "apps\OptimumX",                                            "*.zip",                   "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ))
+    ,[AppDefinition]::new("My Native Console Apps - C++",   "Essentials", [OSType]::x64, "apps\martinsmith1968\NativeWindowsConsoleApplicationsCPP", "*.zip",                   "msbin",                    [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ))
+    ,[AppDefinition]::new("My Native Console Apps - C#",    "Essentials", [OSType]::x64, "apps\martinsmith1968\ConsoleApplications",                 "*.zip",                   "msbin",                    [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes, [InstallAction]::SkipOverwriteExisting ))
+    ,[AppDefinition]::new("My Legacy Console Apps",         "Essentials", [OSType]::Any, "apps\martinsmith1968\legacy",                              "*.*",                     "msbin",                    [InstallType]::CopyFiles)
     ,[AppDefinition]::new("GnuWin32",                       "Standard",   [OSType]::Any, "apps\GnuWin32",                                            "*.zip",                   "",                         [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractWildcard = "gnuwin32\*.*" ; [InstallParameter]::ExtractCustomArguments = "-r" })
     ,[AppDefinition]::new("OptimumX Console Apps",          "Standard",   [OSType]::Any, "apps\OptimumX",                                            "*.zip",                   "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ))
     ,[AppDefinition]::new("NirSoft Console Essentials",     "Standard",   [OSType]::Any, "apps\nirsoft\console",                                     "*.zip",                   "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ))
@@ -615,131 +634,157 @@ $defined_apps = @(
     ,[AppDefinition]::new("ImHex",                          "Developer",  [OSType]::Any, "apps-win\ImHex",                                           "imhex*.zip",              "win\ImHex",                [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ShortcutFilenames = "imhex.exe=ImHex" }) ))
     ,[AppDefinition]::new("TrayToolbar",                    "Standard",   [OSType]::Any, "apps-win\TrayToolbar",                                     "TrayToolbar*.zip",        "win",                      [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ShortcutFilenames = "TrayToolbar*.exe=TrayToolbar" }) ))
     ,[AppDefinition]::new("Awesome Photo Finder",           "Advanced",   [OSType]::Any, "apps-win\Awesome Duplicate Photo Finder",                  "awesome*.zip",            "win",                      [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ShortcutFilenames = "AwesomePhoto*.exe=Awesome Duplicate Photo Finder" }) ))
+    ,[AppDefinition]::new("CertViewer",                     "Developer",  [OSType]::Any, "apps-win\dEajL3kA",                                        "CertViewer*.zip",         "win\CertViewer",           [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ShortcutFilenames = "CertViewer*.exe=Certificate Viewer" }) ))
 
     # Miscellaneous
-    ,[AppDefinition]::new("Login Script",                   "Mandatory",  [OSType]::Any, "",                                                         "Login.cmd",               "",                         [InstallType]::CopyFiles, @{ [InstallParameter]::ShortcutFilenames = "Login.cmd=Login Script" ; [InstallParameter]::ShortcutTarget = "shell:startup" })
-    ,[AppDefinition]::new("Documentation",                  "Mandatory",  [OSType]::Any, "",                                                         "*.md",                    "",                         [InstallType]::CopyFiles )
+    ,[AppDefinition]::new("Login Script",                   "Essentials", [OSType]::Any, "",                                                         "Login.cmd",               "",                         [InstallType]::CopyFiles, @{ [InstallParameter]::ShortcutFilenames = "Login.cmd=Login Script" ; [InstallParameter]::ShortcutTarget = "shell:startup" })
+    ,[AppDefinition]::new("Documentation",                  "Essentials", [OSType]::Any, "",                                                         "*.md",                    "",                         [InstallType]::CopyFiles )
 )
 
 
 #------------------------------------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------------------------------------
-# Validate
-if ([string]::IsNullOrEmpty($targetFolder)) {
-    $targetFolder = $PSScriptRoot
-}
-$logFileName = Join-Path $targetFolder ($scriptName + "-" + $startDateTimeFormatted + ".log")
-
-# Start
-Write-Log $bannerLine
-Write-Log "-- Started at ${startDateTime}"
-Write-Log $bannerLine
-
-if ($verbose) {
-    Write-Log "** Installing to: ${targetFolder}"
-}
-
-New-FolderIfNotExists $targetFolder
-if (-Not (Test-Path $targetFolder)) {
-    throw "Install path not found: ${targetFolder}"
-}
-
-if ($osType -eq [OSType]::Any) {
-    $osType = Get-OSType
-}
-if ($verbose) {
-    Write-Log "** Processing OS Type: ${osType}"
-}
-
-# Filter based on parameters
-Write-Log "** Filtering: $($defined_apps.Count) apps"
-$install_apps = @()
-$index = 0
-Write-Log "** Filtering: $($defined_apps.Count) apps"
-foreach($defined_app in $defined_apps) {
-    $index++
-
-    $include = $False
-
-    if ($defined_app.OSType -eq $osType -or $defined_app.OSType -eq [OSType]::Any) {
-        $include = $True
+function Install() {
+    # Validate
+    if ([string]::IsNullOrEmpty($targetFolder)) {
+        $targetFolder = $PSScriptRoot
     }
-    if ($include) {
-        if ($appNames.Length -gt 0) {
-            if ($defined_app.Id -notin $appNames) {
+    $logFileName = Join-Path $targetFolder ($scriptName + "-" + $startDateTimeFormatted + ".log")
+
+    # Start
+    Write-Log $bannerLine
+    Write-Log "-- Started at ${startDateTime}"
+    Write-Log $bannerLine
+
+    if ($verbose) {
+        Write-Log "** Installing to: ${targetFolder}"
+    }
+
+    New-FolderIfNotExists $targetFolder
+    if (-Not (Test-Path $targetFolder)) {
+        throw "Install path not found: ${targetFolder}"
+    }
+
+    if ($osType -eq [OSType]::Any) {
+        $osType = Get-OSType
+    }
+    if ($verbose) {
+        Write-Log "** Processing OS Type: ${osType}"
+    }
+
+    # Filter based on parameters
+    Write-Log "** Filtering: $($defined_apps.Count) apps"
+    $install_apps = @()
+    $index = 0
+    Write-Log "** Filtering: $($defined_apps.Count) apps"
+    foreach($defined_app in $defined_apps) {
+        $index++
+
+        $include = $False
+
+        if ($defined_app.OSType -eq $osType -or $defined_app.OSType -eq [OSType]::Any) {
+            $include = $True
+        }
+        if ($include) {
+            if ($appNames.Length -gt 0) {
+                if ($defined_app.Id -notin $appNames) {
+                    $include = $False
+                }
+            }
+            elseif (-Not $groups.Contains($defined_app.GroupName)) {
                 $include = $False
             }
         }
-        elseif (-Not $groups.Contains($defined_app.GroupName)) {
-            $include = $False
+
+        if ($include) {
+            if ($verbose) {
+                Write-Log "** Including: [$($defined_app.OSType)] $($defined_app.Id)"
+            }
+            $install_apps += $defined_app
         }
     }
 
-    if ($include) {
-        if ($verbose) {
-            Write-Log "** Including: [$($defined_app.OSType)] $($defined_app.Id)"
+    # Install Apps
+    Push-Location $targetFolder
+
+    Write-Log "** Installing: $($install_apps.Count) apps"
+    $index = 0
+    foreach($app in $install_apps) {
+        $index++
+        Write-Log $bannerLine
+        Write-Log "-- ${index}: $($app.Id)"
+
+        if ($dryRun) {
+            Write-Log "-- DRY RUN: $($app.Id) --> $($app.TargetPath)"
+        } else {
+            $app.Install($targetFolder, $verbose, $debug)
         }
-        $install_apps += $defined_app
     }
-}
 
-# Install Apps
-Push-Location $targetFolder
+    # Modify PATH
+    if ($modifyPath) {
+        # Add target directories to PATH
+        Write-Log $bannerLine
+        Write-Log "-- Building new PATHs"
 
-Write-Log "** Installing: $($install_apps.Count) apps"
-$index = 0
-foreach($app in $install_apps) {
-    $index++
-    Write-Log $bannerLine
-    Write-Log "-- ${index}: $($app.Id)"
+        $utilsPaths = @()
+        $utilsPaths += (Join-Path $targetFolder "cmd")
+        $utilsPaths += (Join-Path $targetFolder "bin")
+        $utilsPaths += (Join-Path $targetFolder "msbin")
+        $utilsPaths += (Join-Path $targetFolder "mswin")
+        $utilsPaths += (Join-Path $targetFolder "gnuwin32" "bin")
+        $utilsPaths += (Join-Path $targetFolder "gnuwin32" "sbin")
+        $utilsPaths += (Join-Path $targetFolder "sysinternals")
 
-    if ($dryRun) {
-        Write-Log "-- DRY RUN: $($app.Id) --> $($app.TargetPath)"
-    } else {
-        $app.Install($targetFolder, $verbose, $debug)
+        Write-Log "-- Retrieving existing PATH"
+        $existingPath = ([System.Environment]::GetEnvironmentVariable('PATH', [System.EnvironmentVariableTarget]::User))
+        $existingPaths = $existingPath.Split(";") | where-object { $_ -notlike ($targetFolder + "*") } | foreach-object { $_.Trim("\") }
+        Write-Log "-- Building new PATH value"
+        $newPaths = $utilsPaths + $existingPaths
+        $newPathValue = $newPaths -join ";"
+        Write-Log "-- Setting PATH value"
+        Write-Log ""
+        Write-Log $bannerPartLine
+        Write-Log "Old PATH : ${existingPath}"
+        Write-Log-All ($existingPath.split(";"))
+        Write-Log ""
+        Write-Log $bannerPartLine
+        Write-Log "New PATH : ${newPathValue}"
+        Write-Log-All ($newPathValue.split(";"))
+        [System.Environment]::SetEnvironmentVariable('PATH', $newPathValue, [System.EnvironmentVariableTarget]::User)
     }
-}
 
-# Modify PATH
-if ($modifyPath) {
-    # Add target directories to PATH
+    # Complete
+    Write-Log
     Write-Log $bannerLine
-    Write-Log "-- Building new PATHs"
+    Write-Log "-- Success !!"
+    Write-Log $bannerLine
+    Write-Log
+    Write-Log "Log complete: ${logFileName}"
 
-    $utilsPaths = @()
-    $utilsPaths += (Join-Path $targetFolder "cmd")
-    $utilsPaths += (Join-Path $targetFolder "bin")
-    $utilsPaths += (Join-Path $targetFolder "msbin")
-    $utilsPaths += (Join-Path $targetFolder "mswin")
-    $utilsPaths += (Join-Path $targetFolder "gnuwin32" "bin")
-    $utilsPaths += (Join-Path $targetFolder "gnuwin32" "sbin")
-    $utilsPaths += (Join-Path $targetFolder "sysinternals")
-
-    Write-Log "-- Retrieving existing PATH"
-    $existingPath = ([System.Environment]::GetEnvironmentVariable('PATH', [System.EnvironmentVariableTarget]::User))
-    $existingPaths = $existingPath.Split(";") | where-object { $_ -notlike ($targetFolder + "*") } | foreach-object { $_.Trim("\") }
-    Write-Log "-- Building new PATH value"
-    $newPaths = $utilsPaths + $existingPaths
-    $newPathValue = $newPaths -join ";"
-    Write-Log "-- Setting PATH value"
-    Write-Log ""
-    Write-Log $bannerPartLine
-    Write-Log "Old PATH : ${existingPath}"
-    Write-Log-All ($existingPath.split(";"))
-    Write-Log ""
-    Write-Log $bannerPartLine
-    Write-Log "New PATH : ${newPathValue}"
-    Write-Log-All ($newPathValue.split(";"))
-    [System.Environment]::SetEnvironmentVariable('PATH', $newPathValue, [System.EnvironmentVariableTarget]::User)
+    Pop-Location
 }
 
-# Complete
-Write-Log
-Write-Log $bannerLine
-Write-Log "-- Success !!"
-Write-Log $bannerLine
-Write-Log
-Write-Log "Log complete: ${logFileName}"
 
-Pop-Location
+#------------------------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------------------------
+$commandType = [CommandType]$command
+if ($commandType -eq [CommandType]::Install) {
+    Install
+} elseif ($commandType -eq [CommandType]::ListApps) {
+    Write-Host "-- Available Apps:"
+    $allApps = $defined_apps | Sort-Object GroupName, Id
+    foreach ($app in $allApps) {
+        Write-Host "  $($app.GroupName): [$($app.OSType)] $($app.Id)"
+    }
+} elseif ($commandType -eq [CommandType]::ListGroups) {
+    Write-Host "-- Available Groups:"
+    $allGroups = $defined_apps | Select-Object -ExpandProperty GroupName -Unique | Sort-Object
+    foreach ($group in $allGroups) {
+        Write-Host "   ${group}"
+    }
+} else {
+    Write-Log "Unknown command: ${command}"
+}
