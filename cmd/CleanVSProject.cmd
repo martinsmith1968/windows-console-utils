@@ -41,10 +41,10 @@ GOTO :EOF
 
 
 :USAGE
-ECHO %~n0 - Remove all binary and intermediate files and folders from a VS Project
+ECHO %SCRIPTNAME% - Remove all binary and intermediate files and folders from a VS Project
 ECHO.
 ECHO.Usage:
-ECHO.%~n0 [project-file-name] { [options] }
+ECHO.%SCRIPTNAME% [project-file-name] { [options] }
 ECHO. Options: 
 ECHO. /L - List folders to be cleared - don't actually clear them
 ECHO. /O - clear Obj folder too

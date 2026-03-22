@@ -169,9 +169,9 @@ GOTO :EOF
 
 
 :USAGE
-ECHO.%~n0 - Start an Application
+ECHO.%SCRIPTNAME% - Start an Application
 ECHO.
-ECHO.Usage: %~n0 [options]
+ECHO.Usage: %SCRIPTNAME% [options]
 ECHO.
 ECHO.Options: [-/]
 ECHO.

@@ -226,7 +226,7 @@ def processTree(dir, args, indent = 0):
                     index += 1
                     processDir(sub_dir, args, index = index, indent = indent + 1, notes = notes)
                 else:
-                    processTree(sub_dir, args, index = index, indent = indent + 1, notes = notes)
+                    processTree(sub_dir, args, indent = indent + 1)
         
 
 def processDir(dir, args, index = 0, indent = 1, notes = { }):

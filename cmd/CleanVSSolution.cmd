@@ -47,10 +47,10 @@ GOTO :EOF
 
 
 :USAGE
-ECHO %~n0 - Remove all binary and intermediate files and folders for all projects in a solution
+ECHO %SCRIPTNAME% - Remove all binary and intermediate files and folders for all projects in a solution
 ECHO.
 ECHO.Usage:
-ECHO.%~n0 [solution-file] ^| [solution-folder] { [options] }
+ECHO.%SCRIPTNAME% [solution-file] ^| [solution-folder] { [options] }
 ECHO. Options: 
 ECHO. /L  - List folders to be cleared - don't actually clear them
 ECHO. /O  - clear Obj folder too

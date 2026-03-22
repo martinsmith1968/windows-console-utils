@@ -1,0 +1,47 @@
+version: 1
+
+apps:
+  - Id: My.Native.CPP.Console.Apps
+    GroupName: Essentials
+    OSType: x64
+    SourceFolder: apps\martinsmith1968\NativeWindowsConsoleApplicationsCPP
+    SourceWildcard: "*.zip"
+    TargetFolder: msbin
+    InstallType: ExtractZip
+    InstallActions:
+      - RenameReadmes
+      - RenameLicence
+      - RenameFAQ
+      - RenameNews
+      - ClearTargetFolder
+    InstallParameters:
+      ExtractCommand: e
+      ExtractWildcard: "ReleaseU\\*.exe"
+
+# Using : https://onlineyamltools.com/convert-yaml-to-json
+# Produces JSON:
+# {
+#   "version": 1,
+#   "apps": [
+#     {
+#       "name": "My.Native.CPP.Console.Apps",
+#       "group_name": "Essentials",
+#       "os_type": "x64",
+#       "source_folder": "apps\\martinsmith1968\\NativeWindowsConsoleApplicationsCPP",
+#       "source_wildcard": "*.zip",
+#       "target_folder": "msbin",
+#       "install_type": "ExtractZip",
+#       "install_actions": [
+#         "RenameReadmes",
+#         "RenameLicence",
+#         "RenameFAQ",
+#         "RenameNews",
+#         "ClearTargetFolder"
+#       ],
+#       "install_parameters": {
+#         "ExtractCommand": "e",
+#         "ExtractWildcard": "ReleaseU\\*.exe"
+#       }
+#     }
+#   ]
+# }

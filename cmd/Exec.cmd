@@ -2,6 +2,10 @@
 
 SETLOCAL
 
+SET SCRIPTPATH=%~dp0
+SET SCRIPTNAME=%~n0
+SET SCRIPTFULLFILENAME=%~dpnx0
+
 SET DEBUG=N
 SET DRYRUN=N
 SET APP=
@@ -64,10 +68,10 @@ GOTO :EOF
 
 
 :USAGE
-ECHO %~n0 - Execute app app with arguments
+ECHO %SCRIPTNAME% - Execute app app with arguments
 ECHO.
 ECHO.Usage:
-ECHO.%~n0 [app] { [arguments] } { [options] }
+ECHO.%SCRIPTNAME% [app] { [arguments] } { [options] }
 ECHO.
 ECHO.Options:
 ECHO. /T ^| -T [title]  - Set a Title for the Window

@@ -37,6 +37,20 @@ IF EXIST "%APP%" GOTO :FOUND
 CALL :TRY "%SystemDrive%\Utils\msbin" %1 %2 %3 %4 %5 %6 %7 %8
 IF EXIST "%APP%" GOTO :FOUND
 
+CALL :TRY "%SystemDrive%\Utils\win" %1 %2 %3 %4 %5 %6 %7 %8
+IF EXIST "%APP%" GOTO :FOUND
+
+IF NOT "%UTILS%" == "" (
+    CALL :TRY "%UTILS%\mswin" %1 %2 %3 %4 %5 %6 %7 %8
+    IF EXIST "%APP%" GOTO :FOUND
+
+    CALL :TRY "%UTILS%\SysInternals" %1 %2 %3 %4 %5 %6 %7 %8
+    IF EXIST "%APP%" GOTO :FOUND
+)
+
+CALL :TRY "%SystemDrive%\Utils\mswin" %1 %2 %3 %4 %5 %6 %7 %8
+IF EXIST "%APP%" GOTO :FOUND
+
 CALL :TRY "%SystemDrive%\Utils\SysInternals" %1 %2 %3 %4 %5 %6 %7 %8
 IF EXIST "%APP%" GOTO :FOUND
 

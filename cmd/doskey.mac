@@ -22,4 +22,6 @@ g=go $*
 ups=PwRunner.cmd $*
 upy=PyRunner.cmd $*
 ce=ConEmu $*
-le=logexpert $*
+sw=stopwatch $*
+xp=explore $*
+

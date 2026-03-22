@@ -6,7 +6,7 @@ FOR /F "tokens=1-3 delims=/-" %%a IN ('ShowDateTime -f "%%Y-%%m-%%d"') DO (
     SET CURRENTDATETIME_DAY=%%c
 )
 
-FOR /F "tokens=1-4 delims=/:" %%a IN ('ShowDateTime -f "^%%H:%%M:%%S:000"') DO (
+FOR /F "tokens=1-4 delims=/:" %%a IN ('ShowDateTime -f "%%H:%%M:%%S:{fff}"') DO (
     SET CURRENTDATETIME_HOUR=%%a
     SET CURRENTDATETIME_MINUTE=%%b
     SET CURRENTDATETIME_SECOND=%%c
@@ -33,3 +33,4 @@ IF /I "%~1" == "/X" (
     ECHO.JULIANDAY=%CURRENTDATETIME_JULIANDAY%
     ECHO.QUARTER=%CURRENTDATETIME_QUARTER%
 )
+

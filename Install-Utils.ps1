@@ -17,7 +17,7 @@ param (
     [string]$command            = "install"
    ,[string]$targetFolder       = ""
    ,[string]$osType             = "Any"
-   ,[string[]]$groups           = @( "Standard", "Essentials", "Developer" )
+   ,[string[]]$groups           = @( "Standard", "Essentials" )
    ,[string[]]$appNames         = @( )
    ,[switch][bool]$noModifyPath = $false
    ,[switch][bool]$dryRun       = $false
@@ -29,6 +29,10 @@ param (
 
 $modifyPath = !$noModifyPath
 $verbose = !$quiet
+
+if (-Not $groups.Contains("Mandatory")) {
+    $groups += "Mandatory"
+}
 
 if ($debug) {
     Write-SeparatorLine
@@ -52,13 +56,12 @@ if ($debug) {
     }
     Write-SeparatorLine
 }
-$groups += "Mandatory"
 
 
 ################################################################################
 # TODO:
 # General
-# - Allow filtering at invocation (Group, AppName, etc)
+# - Allow filtering at invocation (Group, AppId, etc)
 # - Support DrynRun - install with all options that has creates/updates no files
 #
 # Apps
@@ -99,6 +102,8 @@ enum InstallType {
     CopyFiles
     ExtractZip
     InstallCmd
+    winget
+    choco
 }
 
 enum OSType {
@@ -550,29 +555,28 @@ $defined_apps = @(
     # Command Line Apps
     ,[AppDefinition]::new("7za command",                    "Mandatory",  [OSType]::Any, "apps\7zip\x64",                                            "*.exe",                   "bin",                      [InstallType]::CopyFiles)
     ,[AppDefinition]::new("OptimumX Console Apps",          "Mandatory",  [OSType]::Any, "apps\OptimumX",                                            "*.zip",                   "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ))
-    ,[AppDefinition]::new("My Native Console Apps - C++",   "Essentials", [OSType]::x64, "apps\martinsmith1968\NativeWindowsConsoleApplicationsCPP", "*.zip",                   "msbin",                    [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ))
-    ,[AppDefinition]::new("My Native Console Apps - C#",    "Essentials", [OSType]::x64, "apps\martinsmith1968\ConsoleApplications",                 "*.zip",                   "msbin",                    [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes, [InstallAction]::SkipOverwriteExisting ))
-    ,[AppDefinition]::new("My Legacy Console Apps",         "Essentials", [OSType]::Any, "apps\martinsmith1968\legacy",                              "*.*",                     "msbin",                    [InstallType]::CopyFiles)
+    ,[AppDefinition]::new("Info-ZIP",                       "Standard",   [OSType]::x32, "apps\info-zip",                                            "*win32*.zip",             "bin",                      [InstallType]::ExtractZip)
+    ,[AppDefinition]::new("Info-ZIP",                       "Standard",   [OSType]::x64, "apps\info-zip",                                            "*win64*.zip",             "bin",                      [InstallType]::ExtractZip)
+    ,[AppDefinition]::new("My.Native.CPP.Console.Apps",     "Essentials", [OSType]::x64, "apps\martinsmith1968\NativeWindowsConsoleApplicationsCPP", "*.zip",                   "msbin",                    [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ))
+    ,[AppDefinition]::new("My.Native.CS.Console.Apps",      "Essentials", [OSType]::x64, "apps\martinsmith1968\ConsoleApplications",                 "*.zip",                   "msbin",                    [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes, [InstallAction]::SkipOverwriteExisting ))
+    ,[AppDefinition]::new("My.Legacy.NET.Console.Apps",     "Essentials", [OSType]::Any, "apps\martinsmith1968\legacy",                              "*.*",                     "msbin",                    [InstallType]::CopyFiles)
+    ,[AppDefinition]::new("My.Native.RUST.Console.Apps",    "Essentials", [OSType]::x64, "apps\martinsmith1968\NativeConsoleApplicationsRUST",       "*.zip",                   "msbin",                    [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ))
     ,[AppDefinition]::new("GnuWin32",                       "Standard",   [OSType]::Any, "apps\GnuWin32",                                            "*.zip",                   "",                         [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractWildcard = "gnuwin32\*.*" ; [InstallParameter]::ExtractCustomArguments = "-r" })
-    ,[AppDefinition]::new("OptimumX Console Apps",          "Standard",   [OSType]::Any, "apps\OptimumX",                                            "*.zip",                   "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ))
     ,[AppDefinition]::new("NirSoft Console Essentials",     "Standard",   [OSType]::Any, "apps\nirsoft\console",                                     "*.zip",                   "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ))
     ,[AppDefinition]::new("Fourmilab Crypto tools",         "Standard",   [OSType]::Any, "apps\fourmilab",                                           "*.zip",                   "bin",                      [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractWildcard = "*.exe" })
     ,[AppDefinition]::new("Stahlworks SFK",                 "Standard",   [OSType]::Any, "apps\stahlworks",                                          "sfk.zip",                 "bin",                      [InstallType]::ExtractZip)
     ,[AppDefinition]::new("FAR File Manager",               "Standard",   [OSType]::x32, "apps\far",                                                 "*x86*.7z",                "bin\far",                  [InstallType]::ExtractZip)
     ,[AppDefinition]::new("FAR File Manager",               "Standard",   [OSType]::x64, "apps\far",                                                 "*x64*.7z",                "bin\far",                  [InstallType]::ExtractZip)
     ,[AppDefinition]::new("VerPatch",                       "Standard",   [OSType]::Any, "apps\ddbug",                                               "*.zip",                   "bin",                      [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractWildcard = "*.exe" })
-    ,[AppDefinition]::new("Micro Text Editor",              "Standard",   [OSType]::x32, "apps\micro",                                               "*win32*.zip",             "bin",                      [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ExtractWildcard = "micro.*" })
-    ,[AppDefinition]::new("Micro Text Editor",              "Standard",   [OSType]::x64, "apps\micro",                                               "*win64*.zip",             "bin",                      [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ExtractWildcard = "micro.*" })
-    ,[AppDefinition]::new("Nano Text Editor",               "Standard",   [OSType]::x32, "apps\nano",                                                "*win32*.zip",             "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes, [InstallAction]::RenameLicence, [InstallAction]::RenameFAQ ), @{ [InstallParameter]::ExtractCommand = "e" })
-    ,[AppDefinition]::new("Nano Text Editor Syntax",        "Standard",   [OSType]::x32, "apps\nano",                                                "*win32*.zip",             "bin",                      [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractWildcard = "syntax\*" })
-    ,[AppDefinition]::new("Nano Text Editor",               "Standard",   [OSType]::x64, "apps\nano",                                                "*win64*.zip",             "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes, [InstallAction]::RenameLicence, [InstallAction]::RenameFAQ ), @{ [InstallParameter]::ExtractCommand = "e" })
-    ,[AppDefinition]::new("Nano Text Editor Syntax",        "Standard",   [OSType]::x64, "apps\nano",                                                "*win64*.zip",             "bin",                      [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractWildcard = "syntax\*" })
-    ,[AppDefinition]::new("VerPatch",                       "Standard",   [OSType]::Any, "apps\ddbug",                                               "*.zip",                   "bin",                      [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractWildcard = "*.exe" })
-    ,[AppDefinition]::new("Find and Replace Tool",          "Standard",   [OSType]::Any, "apps\fart",                                                "*.zip",                   "bin",                      [InstallType]::ExtractZip)
+    ,[AppDefinition]::new("Micro.Text.Editor",              "Standard",   [OSType]::x32, "apps\micro",                                               "*win32*.zip",             "bin",                      [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ExtractWildcard = "micro.*" })
+    ,[AppDefinition]::new("Micro.Text.Editor",              "Standard",   [OSType]::x64, "apps\micro",                                               "*win64*.zip",             "bin",                      [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ExtractWildcard = "micro.*" })
+    ,[AppDefinition]::new("Nano.Text.Editor",               "Standard",   [OSType]::x32, "apps\nano",                                                "*win32*.zip",             "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes, [InstallAction]::RenameLicence, [InstallAction]::RenameFAQ ), @{ [InstallParameter]::ExtractCommand = "e" })
+    ,[AppDefinition]::new("Nano.Text.Editor.Syntax",        "Standard",   [OSType]::x32, "apps\nano",                                                "*win32*.zip",             "bin",                      [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractWildcard = "syntax\*" })
+    ,[AppDefinition]::new("Nano.Text.Editor",               "Standard",   [OSType]::x64, "apps\nano",                                                "*win64*.zip",             "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes, [InstallAction]::RenameLicence, [InstallAction]::RenameFAQ ), @{ [InstallParameter]::ExtractCommand = "e" })
+    ,[AppDefinition]::new("Nano.Text.Editor.Syntax",        "Standard",   [OSType]::x64, "apps\nano",                                                "*win64*.zip",             "bin",                      [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractWildcard = "syntax\*" })
+    ,[AppDefinition]::new("Find.and.Replace.Tool",          "Standard",   [OSType]::Any, "apps\fart",                                                "*.zip",                   "bin",                      [InstallType]::ExtractZip)
     ,[AppDefinition]::new("MiniTrue",                       "Standard",   [OSType]::Any, "apps\minitrue",                                            "*.zip",                   "bin",                      [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractWildcard = "*.exe" })
-    ,[AppDefinition]::new("Info-ZIP",                       "Standard",   [OSType]::x32, "apps\info-zip",                                            "*win32*.zip",             "bin",                      [InstallType]::ExtractZip)
-    ,[AppDefinition]::new("Info-ZIP",                       "Standard",   [OSType]::x64, "apps\info-zip",                                            "*win64*.zip",             "bin",                      [InstallType]::ExtractZip)
-    ,[AppDefinition]::new("XD 2 Markdown",                  "Developer",  [OSType]::Any, "apps\formix",                                              "*.zip",                   "bin",                      [InstallType]::ExtractZip)
+    ,[AppDefinition]::new("XD.2.Markdown",                  "Developer",  [OSType]::Any, "apps\formix",                                              "*.zip",                   "bin",                      [InstallType]::ExtractZip)
     ,[AppDefinition]::new("AutoHotKey",                     "Developer",  [OSType]::Any, "apps\AutoHotKey",                                          "*.zip",                   "AutoHotKey",               [InstallType]::ExtractZip)
     ,[AppDefinition]::new("JSON Query tool",                "Standard",   [OSType]::x32, "apps\jq",                                                  "*i386*.exe",              "bin",                      [InstallType]::CopyFiles,  @{ [InstallParameter]::RenameTarget = "jq-*.exe=jq.exe" })
     ,[AppDefinition]::new("JSON Query tool",                "Standard",   [OSType]::x64, "apps\jq",                                                  "*amd64*.exe",             "bin",                      [InstallType]::CopyFiles,  @{ [InstallParameter]::RenameTarget = "jq-*.exe=jq.exe" })
@@ -590,33 +594,42 @@ $defined_apps = @(
     ,[AppDefinition]::new("Microsoft SysInternals",         "Standard",   [OSType]::Any, "apps\Microsoft\SysInternals",                              "*.zip",                   "sysinternals",             [InstallType]::ExtractZip)
     ,[AppDefinition]::new("Microsoft Win2000 Resource Kit", "Standard",   [OSType]::Any, "apps\Microsoft\Win2000ResourceKit",                        "*.zip",                   "bin",                      [InstallType]::ExtractZip)
     ,[AppDefinition]::new("XmlStarlet",                     "Standard",   [OSType]::Any, "apps\xmlstarlet",                                          "*.zip",                   "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ), @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ExtractWildcard = "**\*.exe **\readme **\doc\*.txt" })
+    ,[AppDefinition]::new("WhyIsThatRunning",               "Standard",   [OSType]::Any, "apps\WhyIsThatRunning",                                    "witr*.zip",               "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes, [InstallAction]::RenameLicence ))
+    ,[AppDefinition]::new("K9S",                            "Developer",  [OSType]::x64, "apps\k9s",                                                 "k9s*.zip",                "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes, [InstallAction]::RenameLicence ))
     ,[AppDefinition]::new("F2",                             "Standard",   [OSType]::x64, "apps\F2",                                                  "f2*64*.zip",              "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ), @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ExtractWildcard = "**\*.exe **\readme.md **\scripts\*" })
     ,[AppDefinition]::new("F2",                             "Standard",   [OSType]::x32, "apps\F2",                                                  "f2*86*.zip",              "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ), @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ExtractWildcard = "**\*.exe **\readme.md **\scripts\*" })
     ,[AppDefinition]::new("K9S",                            "Developer",  [OSType]::x64, "apps\k9s",                                                 "k9s*64*.zip",             "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes, [InstallAction]::RenameLicence ), @{ [InstallParameter]::ExtractCommand = "e" })
     ,[AppDefinition]::new("RxRepl",                         "Standard",   [OSType]::Any, "apps\rxrepl",                                              "rxrepl*.zip",             "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ))
     ,[AppDefinition]::new("MSR Match-Search-Replace",       "Standard",   [OSType]::Any, "apps\msr",                                                 "*.exe",                   "bin",                      [InstallType]::CopyFiles,  @( [InstallAction]::RenameReadmes ), @{ [InstallParameter]::RenameTarget = "msr-*.exe=msr.exe" })
 
-    # Windows Apps
-    ,[AppDefinition]::new("Window Extensions",              "Standard",   [OSType]::Any, "apps-win\martinsmith1968\WindowExtensions",                "*.zip",                   "mswin\WindowExtensions",   [InstallType]::ExtractZip, @{ [InstallParameter]::ShortcutFilenames = "WindowExtensions.exe=Window Extensions" ; [InstallParameter]::ShortcutTarget = "shell:startup" })
+    # Wndows Apps
+    ,[AppDefinition]::new("WindowExtensions",               "Standard",   [OSType]::Any, "apps-win\martinsmith1968\WindowExtensions",                "*.zip",                   "mswin\WindowExtensions",   [InstallType]::ExtractZip, @{ [InstallParameter]::ShortcutFilenames = "WindowExtensions.exe=Window Extensions" ; [InstallParameter]::ShortcutTarget = "shell:startup" })
     ,[AppDefinition]::new("WinFormsApplications",           "Standard",   [OSType]::Any, "apps-win\martinsmith1968\WinFormsApplications",            "*.zip",                   "mswin",                    [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ShortcutFilenames = "QuickCalendar.exe=Quick Calendar" ; [InstallParameter]::ShortcutTarget = "shell:startup" })
-    ,[AppDefinition]::new("Metapad",                        "Standard",   [OSType]::Any, "apps-win\metapad",                                         "*.zip",                   "win",                      [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu(@{ [InstallParameter]::ShortcutFilenames = "metapad.exe=Metapad" }) ))
-    ,[AppDefinition]::new("Notepad2",                       "Standard",   [OSType]::Any, "apps-win\notepad2",                                        "*.zip",                   "win",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameLicence ), [hashtable]( ApplyStandardShortcutMenu(@{ [InstallParameter]::ShortcutFilenames = "Notepad2.exe=Notepad 2" }) ))
-    ,[AppDefinition]::new("Notepad3",                       "Standard",   [OSType]::Any, "apps-win\notepad3",                                        "*.zip",                   "win\Notepad3",             [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu(@{ [InstallParameter]::ShortcutFilenames = "Notepad3.exe=Notepad 3" }) ))
-    ,[AppDefinition]::new("Wordpad",                        "Standard",   [OSType]::Any, "apps-win\Microsoft",                                       "wordpad*.zip",            "win\Wordpad",              [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu(@{ [InstallParameter]::ShortcutFilenames = "wordpad.exe=Wordpad" }) ))
-    ,[AppDefinition]::new("Jarte",                          "Standard",   [OSType]::Any, "apps-win\jarte",                                           "jarte*.zip",              "win\jarte",                [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu(@{ [InstallParameter]::ShortcutFilenames = "jarte.exe=Jarte" }) ))
-    ,[AppDefinition]::new(".NET Version Detector",          "Standard",   [OSType]::Any, "apps-win\DotNETVersionDetector",                           "*.zip",                   "win",                      [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu(@{ [InstallParameter]::ShortcutFilenames = "dotnetver.exe=NET Version Detector"  }) ))
-    ,[AppDefinition]::new("Desktop OK",                     "Standard",   [OSType]::x64, "apps-win\SoftwareOK\x64",                                  "DesktopOK*.zip",          "win\SoftwareOK",           [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu(@{ [InstallParameter]::ExtractWildcard = "*.exe" ; [InstallParameter]::ShortcutFilenames = "DesktopOK*.exe=Desktop OK"  }) ))
-    ,[AppDefinition]::new("Desktop OK",                     "Standard",   [OSType]::x32, "apps-win\SoftwareOK\x32",                                  "DesktopOK*.zip",          "win\SoftwareOK",           [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu(@{ [InstallParameter]::ExtractWildcard = "*.exe" ; [InstallParameter]::ShortcutFilenames = "DesktopOK*.exe=Desktop OK" }) ))
-    ,[AppDefinition]::new("FontView OK",                    "Standard",   [OSType]::x64, "apps-win\SoftwareOK\x64",                                  "FontView*.zip",           "win\SoftwareOK",           [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu(@{ [InstallParameter]::ExtractWildcard = "*.exe" ; [InstallParameter]::ShortcutFilenames = "FontViewOK*.exe=FontView OK"  }) ))
-    ,[AppDefinition]::new("TreeSize Free",                  "Standard",   [OSType]::Any, "apps-win\JAM-Software",                                    "*.zip",                   "win\TreeSize",             [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu(@{ [InstallParameter]::ExtractWildcard = "*.exe" ; [InstallParameter]::ShortcutFilenames = "TreeSize*.exe=TreeSize Free" }) ))
+    ,[AppDefinition]::new("Metapad",                        "Extended",   [OSType]::Any, "apps-win\metapad",                                         "*.zip",                   "win",                      [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu(@{ [InstallParameter]::ShortcutFilenames = "metapad.exe=Metapad" }) ))
+    ,[AppDefinition]::new("Notepad2",                       "Extended",   [OSType]::Any, "apps-win\notepad2",                                        "*.zip",                   "win",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameLicence ), [hashtable]( ApplyStandardShortcutMenu(@{ [InstallParameter]::ShortcutFilenames = "notepad2.exe=Notepad 2" }) ))
+    ,[AppDefinition]::new("Notepad3",                       "Extended",   [OSType]::Any, "apps-win\notepad3",                                        "*.zip",                   "win\Notepad3",             [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu(@{ [InstallParameter]::ShortcutFilenames = "Notepad3.exe=Notepad 3" }) ))
+    ,[AppDefinition]::new("Wordpad",                        "Extended",   [OSType]::Any, "apps-win\Microsoft\Wordpad",                               "wordpad*.zip",            "win\Wordpad",              [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu(@{ [InstallParameter]::ShortcutFilenames = "wordpad.exe=Wordpad" }) ))
+    ,[AppDefinition]::new("Ferrite.Markdown.Editor",        "Extended",   [OSType]::x64, "apps-win\Ferrite",                                         "ferrite*.zip",            "win\Ferrite",              [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu(@{ [InstallParameter]::ShortcutFilenames = "ferrite.exe=Ferrite Markdown Editor" }) ))
+    ,[AppDefinition]::new("DependencyWalker",               "Developer",  [OSType]::x32, "apps-win\Microsoft\DependencyWalker",                      "depends*x86*.zip",        "win",                      [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu(@{ [InstallParameter]::ShortcutFilenames = "depends.exe=DependencyWalker" }) ))
+    ,[AppDefinition]::new("DependencyWalker",               "Developer",  [OSType]::x64, "apps-win\Microsoft\DependencyWalker",                      "depends*x64*.zip",        "win",                      [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu(@{ [InstallParameter]::ShortcutFilenames = "depends.exe=DependencyWalker" }) ))
+    ,[AppDefinition]::new("Jarte",                          "Extended",   [OSType]::Any, "apps-win\jarte",                                           "jarte*.zip",              "win\jarte",                [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu(@{ [InstallParameter]::ShortcutFilenames = "jarte.exe=Jarte" }) ))
+    ,[AppDefinition]::new("NET.Version.Detector",           "Developer",  [OSType]::Any, "apps-win\DotNETVersionDetector",                           "*.zip",                   "win",                      [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu(@{ [InstallParameter]::ShortcutFilenames = "dotnetver.exe=NET Version Detector"  }) ))
+    ,[AppDefinition]::new("FontView.OK",                    "Extended",   [OSType]::x64, "apps-win\SoftwareOK\x64",                                  "FontView*.zip",           "win\SoftwareOK",           [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu(@{ [InstallParameter]::ExtractWildcard = "*.exe" ; [InstallParameter]::ShortcutFilenames = "FontViewOK*.exe=FontView OK"  }) ))
+    ,[AppDefinition]::new("Desktop.OK",                     "Extended",   [OSType]::x64, "apps-win\SoftwareOK\x64",                                  "DesktopOK*.zip",          "win\SoftwareOK",           [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu(@{ [InstallParameter]::ExtractWildcard = "*.exe" ; [InstallParameter]::ShortcutFilenames = "DesktopOK*.exe=Desktop OK"  }) ))
+    ,[AppDefinition]::new("Desktop.OK",                     "Extended",   [OSType]::x32, "apps-win\SoftwareOK\x32",                                  "DesktopOK*.zip",          "win\SoftwareOK",           [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu(@{ [InstallParameter]::ExtractWildcard = "*.exe" ; [InstallParameter]::ShortcutFilenames = "DesktopOK*.exe=Desktop OK" }) ))
+    ,[AppDefinition]::new("TreeSize.Free",                  "Extended",   [OSType]::Any, "apps-win\JAM-Software",                                    "*.zip",                   "win\TreeSize",             [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu(@{ [InstallParameter]::ExtractWildcard = "*.exe" ; [InstallParameter]::ShortcutFilenames = "TreeSize*.exe=TreeSize Free" }) ))
     ,[AppDefinition]::new("Topdesk",                        "OnDemand",   [OSType]::Any, "apps-win\SnadBoy",                                         "*.zip",                   "win\Snadboy",              [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractWildcard = "*.exe" ; [InstallParameter]::ShortcutFilenames = "TopDesk*.exe=Topdesk" ; [InstallParameter]::ShortcutTarget = "shell:desktop" })
-    ,[AppDefinition]::new("SystemTrayMenu",                 "Standard",   [OSType]::Any, "apps-win\SystemTrayMenu",                                  "*.zip",                   "win\SystemTrayMenu",       [InstallType]::ExtractZip, @{ [InstallParameter]::ShortcutFilenames = "SystemTrayMenu.exe=System Tray Menu" ; [InstallParameter]::ShortcutTarget = "shell:startup" })
-    ,[AppDefinition]::new("LogExpert",                      "Standard",   [OSType]::Any, "apps-win\LogExpert",                                       "*.zip",                   "win\LogExpert",            [InstallType]::ExtractZip, @( [InstallAction]::ClearTargetFolder ), [hashtable]( ApplyStandardShortcutMenu(@{ [InstallParameter]::ShortcutFilenames = "LogExpert.exe=Log Expert" }) ))
-    ,[AppDefinition]::new("NirSoft-RegistryScanner",        "Standard",   [OSType]::Any, "apps-win\nirsoft",                                         "RegScanner*.zip",         "win\nirsoft",              [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ), [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ShortcutFilenames = "RegScanner*.exe=RegScanner" }) ))
-    ,[AppDefinition]::new("NirSoft-HotKeyList",             "System",     [OSType]::Any, "apps-win\nirsoft",                                         "hotkeyslist*.zip",        "win\nirsoft",              [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ), [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ShortcutFilenames = "hotkeyslist*.exe=Hot Keys List" }) ))
-    ,[AppDefinition]::new("HotKey Detective",               "System",     [OSType]::x32, "apps-win\ITachiLab\hotkey-detective",                      "hotkey-detective*.zip",   "win\nirsoft",              [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ), [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ExtractWildcard = "x86\*" ; [InstallParameter]::ShortcutFilenames = "hotkey*.exe=Hot Key Detective" }) ))
-    ,[AppDefinition]::new("HotKey Detective",               "System",     [OSType]::x64, "apps-win\ITachiLab\hotkey-detective",                      "hotkey-detective*.zip",   "win\nirsoft",              [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ), [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ExtractWildcard = "x64\*" ; [InstallParameter]::ShortcutFilenames = "hotkey*.exe=Hot Key Detective" }) ))
-    ,[AppDefinition]::new("AlomWare Toolbox",               "System",     [OSType]::Any, "apps-win\Alomware",                                        "Toolbox*.zip",            "win\Toolbox",              [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ShortcutFilenames = "Toolbox*.exe=AlomWare Toolbox" }) ))
+    ,[AppDefinition]::new("System.Tray.Menu",               "Standard",   [OSType]::Any, "apps-win\SystemTrayMenu",                                  "*.zip",                   "win\SystemTrayMenu",       [InstallType]::ExtractZip, @{ [InstallParameter]::ShortcutFilenames = "SystemTrayMenu.exe=System Tray Menu" ; [InstallParameter]::ShortcutTarget = "shell:startup" })
+    ,[AppDefinition]::new("LogExpert",                      "Developer",  [OSType]::Any, "apps-win\LogExpert",                                       "*.zip",                   "win\LogExpert",            [InstallType]::ExtractZip, @( [InstallAction]::ClearTargetFolder ), [hashtable]( ApplyStandardShortcutMenu(@{ [InstallParameter]::ShortcutFilenames = "LogExpert.exe=Log Expert" }) ))
+    ,[AppDefinition]::new("NirSoft.Registry.Scanner",       "System",     [OSType]::Any, "apps-win\nirsoft",                                         "RegScanner*.zip",         "win\nirsoft",              [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ), [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ShortcutFilenames = "RegScanner*.exe=RegScanner" }) ))
+    ,[AppDefinition]::new("NirSoft.HotKey.List",            "System",     [OSType]::Any, "apps-win\nirsoft",                                         "hotkeyslist*.zip",        "win\nirsoft",              [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ), [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ShortcutFilenames = "hotkeyslist*.exe=Hot Keys List" }) ))
+    ,[AppDefinition]::new("NirSoft.Icons.Extract",          "System",     [OSType]::Any, "apps-win\nirsoft",                                         "iconsex*.zip",            "win\nirsoft",              [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ), [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ShortcutFilenames = "iconsext*.exe=Icons Extractor" }) ))
+    ,[AppDefinition]::new("NirSoft.Resources.Extract",      "System",     [OSType]::x32, "apps-win\nirsoft",                                         "resourcesext*32*.zip",    "win\nirsoft",              [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ), [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ShortcutFilenames = "resourcesext*.exe=Resources Extractor" }) ))
+    ,[AppDefinition]::new("NirSoft.Resources.Extract",      "System",     [OSType]::x64, "apps-win\nirsoft",                                         "resourcesext*64*.zip",    "win\nirsoft",              [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ), [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ShortcutFilenames = "resourcesext*.exe=Resources Extractor" }) ))
+    ,[AppDefinition]::new("NirSoft.NETResources.Extract",   "System",     [OSType]::x64, "apps-win\nirsoft",                                         "dotnetresourcesext*.zip", "win\nirsoft",              [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ), [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ShortcutFilenames = "dotnetresourcesext*.exe=.NET Resources Extractor" }) ))
+    ,[AppDefinition]::new("HotKey.Detective",               "System",     [OSType]::x32, "apps-win\ITachiLab\hotkey-detective",                      "hotkey-detective*.zip",   "win\nirsoft",              [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ), [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ExtractWildcard = "x86\*" ; [InstallParameter]::ShortcutFilenames = "hotkey*.exe=Hot Key Detective" }) ))
+    ,[AppDefinition]::new("HotKey.Detective",               "System",     [OSType]::x64, "apps-win\ITachiLab\hotkey-detective",                      "hotkey-detective*.zip",   "win\nirsoft",              [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ), [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ExtractWildcard = "x64\*" ; [InstallParameter]::ShortcutFilenames = "hotkey*.exe=Hot Key Detective" }) ))
+    ,[AppDefinition]::new("AlomWare.Toolbox",               "System",     [OSType]::Any, "apps-win\Alomware",                                        "Toolbox*.zip",            "win\Toolbox",              [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ShortcutFilenames = "Toolbox*.exe=AlomWare Toolbox" }) ))
     ,[AppDefinition]::new("SourceGit",                      "Developer",  [OSType]::Any, "apps-win\SourceGit",                                       "sourcegit*.zip",          "win\SourceGit",            [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ShortcutFilenames = "SourceGit*.exe=SourceGit" }) ))
     ,[AppDefinition]::new("SourceGit Themes",               "Developer",  [OSType]::Any, "apps-win\SourceGit\Themes",                                "*.json",                  "win\SourceGit\Themes",     [InstallType]::CopyFiles)
     ,[AppDefinition]::new("Optimizer",                      "System",     [OSType]::Any, "apps-win\hellzerg\Optimizer",                              "*.exe",                   "win",                      [InstallType]::CopyFiles, [hashtable]( ApplyStandardShortcutMenu(@{ [InstallParameter]::ShortcutFilenames = "Optimizer-*.exe=Optimizer" }) ))
@@ -635,11 +648,42 @@ $defined_apps = @(
     ,[AppDefinition]::new("TrayToolbar",                    "Standard",   [OSType]::Any, "apps-win\TrayToolbar",                                     "TrayToolbar*.zip",        "win",                      [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ShortcutFilenames = "TrayToolbar*.exe=TrayToolbar" }) ))
     ,[AppDefinition]::new("Awesome Photo Finder",           "Advanced",   [OSType]::Any, "apps-win\Awesome Duplicate Photo Finder",                  "awesome*.zip",            "win",                      [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ShortcutFilenames = "AwesomePhoto*.exe=Awesome Duplicate Photo Finder" }) ))
     ,[AppDefinition]::new("CertViewer",                     "Developer",  [OSType]::Any, "apps-win\dEajL3kA",                                        "CertViewer*.zip",         "win\CertViewer",           [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ShortcutFilenames = "CertViewer*.exe=Certificate Viewer" }) ))
+    ,[AppDefinition]::new("LessMSI",                        "Developer",  [OSType]::Any, "apps-win\LessMSI",                                         "lessmsi*.zip",            "win\LessMSI",              [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ShortcutFilenames = "LessMSI*.exe=Less MSI" }) ))
+    ,[AppDefinition]::new("NET.Dependency.Graph",           "Developer",  [OSType]::Any, "apps-win\mobzystems",                                      "depgraph*.zip",           "win\MobzSystems",          [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ShortcutFilenames = "DepGraph*.exe=NET Dependency Graph:Generate an HTML dependency graph of .NET assemblies" }) ))
+    ,[AppDefinition]::new("AutoResXTranslator",             "Developer",  [OSType]::Any, "apps-win\AutoResXTranslator",                              "AutoResxTranslator*.zip", "win\AutoResXTranslator",   [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ShortcutFilenames = "AutoResXTranslator*.exe=AutoResXTranslator Resource Translator" }) ))
+    ,[AppDefinition]::new("dnGrep",                         "Standard",   [OSType]::x32, "apps-win\dnGrep",                                          "dnGrep*x86*.zip",         "win\dnGrep",               [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ShortcutFilenames = "dnGrep.exe=dnGrep" }) ))
+    ,[AppDefinition]::new("dnGrep",                         "Standard",   [OSType]::x64, "apps-win\dnGrep",                                          "dnGrep*x64*.zip",         "win\dnGrep",               [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ShortcutFilenames = "dnGrep.exe=dnGrep" }) ))
 
     # Miscellaneous
     ,[AppDefinition]::new("Login Script",                   "Essentials", [OSType]::Any, "",                                                         "Login.cmd",               "",                         [InstallType]::CopyFiles, @{ [InstallParameter]::ShortcutFilenames = "Login.cmd=Login Script" ; [InstallParameter]::ShortcutTarget = "shell:startup" })
     ,[AppDefinition]::new("Documentation",                  "Essentials", [OSType]::Any, "",                                                         "*.md",                    "",                         [InstallType]::CopyFiles )
 )
+
+#------------------------------------------------------------------------------------------------------------------------
+# Validate
+$app_keys = @{ }
+foreach($defined_app in $defined_apps) {
+    if ($defined_app.Id -like "* *") {
+        throw "Invalid App Id: $($defined_app.Id) - $($defined_app.SourceFolder)"
+    }
+
+    $key = $defined_app.Id + "|" + $defined_app.OSType.ToString()
+    if ($app_keys.ContainsKey($key)) {
+        $app_keys[$key]++
+    } else {
+        $app_keys[$key] = 1
+    }
+}
+
+$duplicates = $app_keys.GetEnumerator() | Where-Object { $_.Value -gt 1 }
+if ($duplicates.Count -gt 0) {
+    $dup_app_names = @()
+    foreach($duplicate in $duplicates) {
+        $dup_app_names += $duplicate.Key
+    }
+    $message = "Duplicate App Id(s) found: " + ($dup_app_names -join ", ")
+    throw $message
+}
 
 
 #------------------------------------------------------------------------------------------------------------------------
@@ -656,6 +700,19 @@ function Install() {
     Write-Log $bannerLine
     Write-Log "-- Started at ${startDateTime}"
     Write-Log $bannerLine
+    
+    # Validate
+    if ([string]::IsNullOrEmpty($targetFolder)) {
+        $targetFolder = $PSScriptRoot
+    }
+    if ($verbose) {
+        Write-Log "** Installing to: ${targetFolder}"
+    }
+    New-FolderIfNotExists $targetFolder
+    if (-Not (Test-Path $targetFolder)) {
+        throw "Install path not found: ${targetFolder}"
+    }
+    [System.Environment]::SetEnvironmentVariable('UTILS', $targetFolder, [System.EnvironmentVariableTarget]::User)
 
     if ($verbose) {
         Write-Log "** Installing to: ${targetFolder}"
@@ -736,6 +793,9 @@ function Install() {
         $utilsPaths += (Join-Path $targetFolder "gnuwin32" "bin")
         $utilsPaths += (Join-Path $targetFolder "gnuwin32" "sbin")
         $utilsPaths += (Join-Path $targetFolder "sysinternals")
+        if (Test-Path -Path (Join-Path $targetFolder "Custom")) {
+            $utilsPaths += (Join-Path $targetFolder "Custom")
+        }
 
         Write-Log "-- Retrieving existing PATH"
         $existingPath = ([System.Environment]::GetEnvironmentVariable('PATH', [System.EnvironmentVariableTarget]::User))
@@ -762,8 +822,6 @@ function Install() {
     Write-Log $bannerLine
     Write-Log
     Write-Log "Log complete: ${logFileName}"
-
-    Pop-Location
 }
 
 

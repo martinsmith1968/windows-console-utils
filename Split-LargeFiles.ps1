@@ -46,8 +46,34 @@ if (!(Test-Path $command -PathType Leaf)) {
     }
 }
 
-$items = Get-LargeFiles -threshold $threshold
+$candidates = Get-LargeFiles -threshold $threshold -file_extension "*.zip"
 Write-Host "Found $($items.count) candidate files larger than $($threshold / 1MB)MB"
+
+$items = @()
+foreach($candidate in $candidates) {
+    Push-Location $candidate.Directory
+    
+    $include = $True
+
+    if ($include -And (Test-Path -Path ".gitkeep")) {
+        $include = $False
+        Write-Host "Skipping $($candidate.FullName) - .gitkeep file found in directory"
+    }
+
+    if ($include -And (Test-Path -Path ".gitignore")) {
+        $ignored_lines = Get-Content -Path ".gitignore"
+        if ($ignored_lines -contains $candidate.Name) {
+            $include = $False
+            Write-Host "Skipping $($candidate.FullName) - already in .gitignore"
+        }
+    }
+    
+    if ($include) {
+        $items += $candidate
+    }
+
+    Pop-Location
+}
 
 $splitSizeText = "$($maxSplitSize / 1MB)m"
 
@@ -77,3 +103,10 @@ foreach($item in $items) {
 
 Write-SeparatorLine
 Write-Host "${splitCount} - files split"
+
+$index = 0
+foreach($item in $items) {
+    ++$index
+    Write-Host "${index}: $($item.FullName) - $($item.Length)"
+}
+Write-Host "${index} - files split"

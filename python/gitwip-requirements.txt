@@ -1,2 +1,2 @@
-GitPython==3.1.37
-rich==13.9.4
+GitPython==3.1.46
+rich==14.3.2

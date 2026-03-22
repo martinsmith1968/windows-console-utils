@@ -425,11 +425,18 @@ SET APP=%SCRIPTPATH%\..\win\dotnetver.exe
 GOTO :EOF
 
 
-REM --------------------------------------------------------------------------------
-:SHOWBANNER
-IF "%~1" == "" GOTO :EOF
-
-BANNERTEXT "%~1" @%SCRIPTPATH%\%SCRIPTNAME%.bannertext.options -fln 1
+:USAGE
+ECHO.%SCRIPTNAME% - .NET command helper
+ECHO.Usage: %SCRIPTNAME% [command] [options]
+ECHO.
+ECHO.Commands:
+ECHO.rebuild     - clean and rebuild a solution (Shortcut: rb / cb)
+ECHO.rebuildtest - clean, rebuild and test a solution (Shortcut: rbt / cbt)
+ECHO.run         - run a project (Shortcut: r)
+ECHO.
+ECHO.Options:
+ECHO./C [configuration] - Set the build configuration
+ECHO./A [arguments]     - Add the arguments 
 
 GOTO :EOF
 
@@ -450,3 +457,4 @@ REM ----------------------------------------------------------------------------
 :: The argument for this subroutine is the variable NAME.
 FOR %%i IN ("a=A" "b=B" "c=C" "d=D" "e=E" "f=F" "g=G" "h=H" "i=I" "j=J" "k=K" "l=L" "m=M" "n=N" "o=O" "p=P" "q=Q" "r=R" "s=S" "t=T" "u=U" "v=V" "w=W" "x=X" "y=Y" "z=Z") DO CALL SET "%1=%%%1:%%~i%%"
 GOTO:EOF
+

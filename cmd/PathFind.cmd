@@ -1,0 +1,98 @@
+@ECHO OFF
+
+SETLOCAL EnableDelayedExpansion
+
+SET SCRIPTPATH=%~dp0
+SET SCRIPTNAME=%~n0
+SET SCRIPTFULLFILENAME=%~dpnx0
+
+SET ARGPOS=0
+SET HELP=N
+SET DEBUG=N
+
+SET WILDCARD=
+SET SUMMARY=Y
+
+SET PATHCOUNT=0
+
+:PARSEOPTS
+IF "%~1" == "" GOTO :VALIDATE
+IF /I "%~1" == "/?"  SET HELP=Y&&SHIFT && GOTO :PARSEOPTS
+IF /I "%~1" == "-?"  SET HELP=Y&&SHIFT && GOTO :PARSEOPTS
+IF /I "%~1" == "/X"  SET DEBUG=Y&&SHIFT && GOTO :PARSEOPTS
+IF /I "%~1" == "-X"  SET DEBUG=Y&&SHIFT && GOTO :PARSEOPTS
+IF /I "%~1" == "/S"  SET SUMMARY=Y&&SHIFT && GOTO :PARSEOPTS
+IF /I "%~1" == "-S"  SET SUMMARY=Y&&SHIFT && GOTO :PARSEOPTS
+IF /I "%~1" == "/S-" SET SUMMARY=N&&SHIFT && GOTO :PARSEOPTS
+IF /I "%~1" == "-S-" SET SUMMARY=N&&SHIFT && GOTO :PARSEOPTS
+
+SET /A ARGPOS+=1
+IF %ARGPOS% EQU 1 SET WILDCARD=%~1&& SHIFT && GOTO :PARSEOPTS
+
+CALL :USAGE
+CALL :ERROR "Invalid argument at position %ARGPOS%: %~1"
+GOTO :EOF
+
+
+:VALIDATE
+IF "%HELP%" == "Y" CALL :USAGE && GOTO :EOF
+
+IF "%WILDCARD%" == "" (
+    CALL :USAGE
+    CALL :ERROR Missing wildcard argument
+    GOTO :EOF
+)
+
+
+:GO
+FOR %%A IN ("%PATHS:;=";"%") DO (
+  CALL :SEARCHPATH "%%~A"
+)
+
+IF "%SUMMARY%" == "Y" (
+    ECHO.
+    ECHO.%PATHCOUNT% paths matched: %WILDCARD%
+)
+
+GOTO :EOF
+
+
+:SEARCHPATH
+IF "%~1" == "" GOTO :EOF
+
+PUSHD "%~1"
+IF ERRORLEVEL 1 (
+    ECHO.WARNING: Unable to search path: "%~1"
+    GOTO :SEARCHPATH_EXIT
+)
+
+IF NOT EXIST "%WILDCARD%" GOTO :SEARCHPATH_EXIT
+
+SET /A PATHCOUNT+=1
+
+ECHO.
+ECHO.Found: %~1
+DIR /B /A-D "%WILDCARD%" 2>NUL | sed "s/^/  /g"
+
+:SEARCHPATH_EXIT
+POPD >NUL 2>&1
+
+GOTO :EOF
+
+
+:USAGE
+ECHO.%SCRIPTNAME% - Search the path for files matching a wildcard
+ECHO.
+ECHO.Usage:
+ECHO.%SCRIPTNAME% [wildcard] [options]
+ECHO.
+ECHO.Options:
+ECHO./X     Activate Debug mode (Default: %DEBUG%)
+
+GOTO :EOF
+
+
+:ERROR
+ECHO.
+ECHO.ERROR: %*
+GOTO :EOF
