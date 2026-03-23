@@ -2,6 +2,7 @@ version: 1
 
 apps:
   - Id: My.Native.CPP.Console.Apps
+    Description: A collection of native C++ console applications for Windows.
     GroupName: Essentials
     OSType: x64
     SourceFolder: apps\martinsmith1968\NativeWindowsConsoleApplicationsCPP

@@ -97,6 +97,17 @@ enum CommandType {
     ListGroups
 }
 
+enum OSType {
+    Any
+    x64
+    x32
+}
+
+enum SourceType {
+    Local
+    RemoteURL
+}
+
 enum InstallType {
     None
     CopyFiles
@@ -104,12 +115,6 @@ enum InstallType {
     InstallCmd
     winget
     choco
-}
-
-enum OSType {
-    Any
-    x64
-    x32
 }
 
 enum InstallAction
@@ -540,33 +545,32 @@ $bannerPartLine = [string]::new('-', 40)
 
 $defined_apps = @(
     # Base utils for the install
-     [AppDefinition]::new("7za command",                    "Mandatory",  [OSType]::x64, "apps\7zip\x64",                                            "*.exe",                   "bin",                      [InstallType]::CopyFiles)
-    ,[AppDefinition]::new("7za command",                    "Mandatory",  [OSType]::x32, "apps\7zip\x32",                                            "*.exe",                   "bin",                      [InstallType]::CopyFiles)
+     [AppDefinition]::new("7za.command",                    "Mandatory",  [OSType]::x64, "apps\7zip\x64",                                            "*.exe",                   "bin",                      [InstallType]::CopyFiles)
+    ,[AppDefinition]::new("7za.command",                    "Mandatory",  [OSType]::x32, "apps\7zip\x32",                                            "*.exe",                   "bin",                      [InstallType]::CopyFiles)
 
     # Files / Scripts / Data
-    ,[AppDefinition]::new("CMD Scripts",                    "Mandatory",  [OSType]::Any, "cmd",                                                      "*",                       "cmd",                      [InstallType]::CopyFiles)
-    ,[AppDefinition]::new("Data Files",                     "Mandatory",  [OSType]::Any, "Data",                                                     "*",                       "Data",                     [InstallType]::CopyFiles)
+    ,[AppDefinition]::new("CMD.Scripts",                    "Mandatory",  [OSType]::Any, "cmd",                                                      "*",                       "cmd",                      [InstallType]::CopyFiles)
+    ,[AppDefinition]::new("Data.Files",                     "Mandatory",  [OSType]::Any, "Data",                                                     "*",                       "Data",                     [InstallType]::CopyFiles)
     ,[AppDefinition]::new("Images",                         "Mandatory",  [OSType]::Any, "images",                                                   "*",                       "images",                   [InstallType]::CopyFiles)
-    ,[AppDefinition]::new("JavaScript scripts",             "Mandatory",  [OSType]::Any, "JavaScript",                                               "*",                       "JavaScript",               [InstallType]::CopyFiles)
+    ,[AppDefinition]::new("JavaScript.scripts",             "Mandatory",  [OSType]::Any, "JavaScript",                                               "*",                       "JavaScript",               [InstallType]::CopyFiles)
     ,[AppDefinition]::new("Notes",                          "Mandatory",  [OSType]::Any, "Notes",                                                    "*",                       "Notes",                    [InstallType]::CopyFiles)
-    ,[AppDefinition]::new("Powershell scripts",             "Mandatory",  [OSType]::Any, "Powershell",                                               "*.ps1;*.dll",             "Powershell",               [InstallType]::CopyFiles)
-    ,[AppDefinition]::new("Python scripts",                 "Mandatory",  [OSType]::Any, "python",                                                   "*.py;*.txt",              "python",                   [InstallType]::CopyFiles)
+    ,[AppDefinition]::new("Powershell.scripts",             "Mandatory",  [OSType]::Any, "Powershell",                                               "*.ps1;*.dll",             "Powershell",               [InstallType]::CopyFiles)
+    ,[AppDefinition]::new("Python.scripts",                 "Mandatory",  [OSType]::Any, "python",                                                   "*.py;*.txt",              "python",                   [InstallType]::CopyFiles)
 
     # Command Line Apps
-    ,[AppDefinition]::new("7za command",                    "Mandatory",  [OSType]::Any, "apps\7zip\x64",                                            "*.exe",                   "bin",                      [InstallType]::CopyFiles)
-    ,[AppDefinition]::new("OptimumX Console Apps",          "Mandatory",  [OSType]::Any, "apps\OptimumX",                                            "*.zip",                   "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ))
     ,[AppDefinition]::new("Info-ZIP",                       "Standard",   [OSType]::x32, "apps\info-zip",                                            "*win32*.zip",             "bin",                      [InstallType]::ExtractZip)
     ,[AppDefinition]::new("Info-ZIP",                       "Standard",   [OSType]::x64, "apps\info-zip",                                            "*win64*.zip",             "bin",                      [InstallType]::ExtractZip)
+    ,[AppDefinition]::new("OptimumX.Console.Apps",          "Mandatory",  [OSType]::Any, "apps\OptimumX",                                            "*.zip",                   "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ))
     ,[AppDefinition]::new("My.Native.CPP.Console.Apps",     "Essentials", [OSType]::x64, "apps\martinsmith1968\NativeWindowsConsoleApplicationsCPP", "*.zip",                   "msbin",                    [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ))
     ,[AppDefinition]::new("My.Native.CS.Console.Apps",      "Essentials", [OSType]::x64, "apps\martinsmith1968\ConsoleApplications",                 "*.zip",                   "msbin",                    [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes, [InstallAction]::SkipOverwriteExisting ))
     ,[AppDefinition]::new("My.Legacy.NET.Console.Apps",     "Essentials", [OSType]::Any, "apps\martinsmith1968\legacy",                              "*.*",                     "msbin",                    [InstallType]::CopyFiles)
     ,[AppDefinition]::new("My.Native.RUST.Console.Apps",    "Essentials", [OSType]::x64, "apps\martinsmith1968\NativeConsoleApplicationsRUST",       "*.zip",                   "msbin",                    [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ))
     ,[AppDefinition]::new("GnuWin32",                       "Standard",   [OSType]::Any, "apps\GnuWin32",                                            "*.zip",                   "",                         [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractWildcard = "gnuwin32\*.*" ; [InstallParameter]::ExtractCustomArguments = "-r" })
-    ,[AppDefinition]::new("NirSoft Console Essentials",     "Standard",   [OSType]::Any, "apps\nirsoft\console",                                     "*.zip",                   "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ))
-    ,[AppDefinition]::new("Fourmilab Crypto tools",         "Standard",   [OSType]::Any, "apps\fourmilab",                                           "*.zip",                   "bin",                      [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractWildcard = "*.exe" })
-    ,[AppDefinition]::new("Stahlworks SFK",                 "Standard",   [OSType]::Any, "apps\stahlworks",                                          "sfk.zip",                 "bin",                      [InstallType]::ExtractZip)
-    ,[AppDefinition]::new("FAR File Manager",               "Standard",   [OSType]::x32, "apps\far",                                                 "*x86*.7z",                "bin\far",                  [InstallType]::ExtractZip)
-    ,[AppDefinition]::new("FAR File Manager",               "Standard",   [OSType]::x64, "apps\far",                                                 "*x64*.7z",                "bin\far",                  [InstallType]::ExtractZip)
+    ,[AppDefinition]::new("NirSoft.Console.Essentials",     "Standard",   [OSType]::Any, "apps\nirsoft\console",                                     "*.zip",                   "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ))
+    ,[AppDefinition]::new("Fourmilab.Crypto.tools",         "Standard",   [OSType]::Any, "apps\fourmilab",                                           "*.zip",                   "bin",                      [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractWildcard = "*.exe" })
+    ,[AppDefinition]::new("Stahlworks.SFK",                 "Standard",   [OSType]::Any, "apps\stahlworks",                                          "sfk.zip",                 "bin",                      [InstallType]::ExtractZip)
+    ,[AppDefinition]::new("FAR.File.Manager",               "Standard",   [OSType]::x32, "apps\far",                                                 "*x86*.7z",                "bin\far",                  [InstallType]::ExtractZip)
+    ,[AppDefinition]::new("FAR.File.Manager",               "Standard",   [OSType]::x64, "apps\far",                                                 "*x64*.7z",                "bin\far",                  [InstallType]::ExtractZip)
     ,[AppDefinition]::new("VerPatch",                       "Standard",   [OSType]::Any, "apps\ddbug",                                               "*.zip",                   "bin",                      [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractWildcard = "*.exe" })
     ,[AppDefinition]::new("Micro.Text.Editor",              "Standard",   [OSType]::x32, "apps\micro",                                               "*win32*.zip",             "bin",                      [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ExtractWildcard = "micro.*" })
     ,[AppDefinition]::new("Micro.Text.Editor",              "Standard",   [OSType]::x64, "apps\micro",                                               "*win64*.zip",             "bin",                      [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ExtractWildcard = "micro.*" })
@@ -578,21 +582,21 @@ $defined_apps = @(
     ,[AppDefinition]::new("MiniTrue",                       "Standard",   [OSType]::Any, "apps\minitrue",                                            "*.zip",                   "bin",                      [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractWildcard = "*.exe" })
     ,[AppDefinition]::new("XD.2.Markdown",                  "Developer",  [OSType]::Any, "apps\formix",                                              "*.zip",                   "bin",                      [InstallType]::ExtractZip)
     ,[AppDefinition]::new("AutoHotKey",                     "Developer",  [OSType]::Any, "apps\AutoHotKey",                                          "*.zip",                   "AutoHotKey",               [InstallType]::ExtractZip)
-    ,[AppDefinition]::new("JSON Query tool",                "Standard",   [OSType]::x32, "apps\jq",                                                  "*i386*.exe",              "bin",                      [InstallType]::CopyFiles,  @{ [InstallParameter]::RenameTarget = "jq-*.exe=jq.exe" })
-    ,[AppDefinition]::new("JSON Query tool",                "Standard",   [OSType]::x64, "apps\jq",                                                  "*amd64*.exe",             "bin",                      [InstallType]::CopyFiles,  @{ [InstallParameter]::RenameTarget = "jq-*.exe=jq.exe" })
-    ,[AppDefinition]::new("XML Query tool",                 "Standard",   [OSType]::Any, "apps\xq",                                                  "*.zip",                   "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes, [InstallAction]::RenameLicence ))
-    ,[AppDefinition]::new("YAML Query tool",                "Standard",   [OSType]::x32, "apps\yq",                                                  "*386*.zip",               "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes, [InstallAction]::RenameLicence ))
-    ,[AppDefinition]::new("YAML Query tool",                "Standard",   [OSType]::x64, "apps\yq",                                                  "*amd64*.zip",             "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes, [InstallAction]::RenameLicence ))
-    ,[AppDefinition]::new("MalcomSmith tools",              "Standard",   [OSType]::x32, "apps\MalcolmSmith",                                        "*.exe",                   "bin",                      [InstallType]::CopyFiles,  @{ [InstallParameter]::RenameTarget = "scut-*.exe=scut.exe|sdir-*.exe=sdir.exe" })
-    ,[AppDefinition]::new("Naughter ShelExec",              "Standard",   [OSType]::x64, "apps\naughter",                                            "shelexec.zip",            "bin",                      [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ExtractWildcard = "ReleaseU64C\*.exe" })
-    ,[AppDefinition]::new("Naughter ShelExec",              "Standard",   [OSType]::x32, "apps\naughter",                                            "shelexec.zip",            "bin",                      [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ExtractWildcard = "ReleaseUC\*.exe" })
-    ,[AppDefinition]::new("Naughter StartX",                "Standard",   [OSType]::x64, "apps\naughter",                                            "startx.zip",              "bin",                      [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ExtractWildcard = "ReleaseU64\*.exe" })
-    ,[AppDefinition]::new("Naughter StartX",                "Standard",   [OSType]::x32, "apps\naughter",                                            "startx.zip",              "bin",                      [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ExtractWildcard = "ReleaseU\*.exe" })
-    ,[AppDefinition]::new("Microsoft Editor",               "Standard",   [OSType]::x64, "apps\Microsoft\Edit",                                      "*.zip",                   "bin",                      [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ExtractWildcard = "*.exe" })
-    ,[AppDefinition]::new("Microsoft File Checksum Tool",   "Standard",   [OSType]::Any, "apps\Microsoft\FileChecksumIntegrityVerifier",             "*.zip",                   "bin",                      [InstallType]::ExtractZip)
-    ,[AppDefinition]::new("Microsoft XSL Tool",             "Standard",   [OSType]::Any, "apps\Microsoft\msxsl",                                     "msxsl.exe",               "bin",                      [InstallType]::CopyFiles)
-    ,[AppDefinition]::new("Microsoft SysInternals",         "Standard",   [OSType]::Any, "apps\Microsoft\SysInternals",                              "*.zip",                   "sysinternals",             [InstallType]::ExtractZip)
-    ,[AppDefinition]::new("Microsoft Win2000 Resource Kit", "Standard",   [OSType]::Any, "apps\Microsoft\Win2000ResourceKit",                        "*.zip",                   "bin",                      [InstallType]::ExtractZip)
+    ,[AppDefinition]::new("JSON.Query.tool",                "Standard",   [OSType]::x32, "apps\jq",                                                  "*i386*.exe",              "bin",                      [InstallType]::CopyFiles,  @{ [InstallParameter]::RenameTarget = "jq-*.exe=jq.exe" })
+    ,[AppDefinition]::new("JSON.Query.tool",                "Standard",   [OSType]::x64, "apps\jq",                                                  "*amd64*.exe",             "bin",                      [InstallType]::CopyFiles,  @{ [InstallParameter]::RenameTarget = "jq-*.exe=jq.exe" })
+    ,[AppDefinition]::new("XML.Query.tool",                 "Standard",   [OSType]::Any, "apps\xq",                                                  "*.zip",                   "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes, [InstallAction]::RenameLicence ))
+    ,[AppDefinition]::new("YAML.Query.tool",                "Standard",   [OSType]::x32, "apps\yq",                                                  "*386*.zip",               "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes, [InstallAction]::RenameLicence ))
+    ,[AppDefinition]::new("YAML.Query.tool",                "Standard",   [OSType]::x64, "apps\yq",                                                  "*amd64*.zip",             "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes, [InstallAction]::RenameLicence ))
+    ,[AppDefinition]::new("MalcomSmith.tools",              "Standard",   [OSType]::x32, "apps\MalcolmSmith",                                        "*.exe",                   "bin",                      [InstallType]::CopyFiles,  @{ [InstallParameter]::RenameTarget = "scut-*.exe=scut.exe|sdir-*.exe=sdir.exe" })
+    ,[AppDefinition]::new("Naughter.ShelExec",              "Standard",   [OSType]::x64, "apps\naughter",                                            "shelexec.zip",            "bin",                      [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ExtractWildcard = "ReleaseU64C\*.exe" })
+    ,[AppDefinition]::new("Naughter.ShelExec",              "Standard",   [OSType]::x32, "apps\naughter",                                            "shelexec.zip",            "bin",                      [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ExtractWildcard = "ReleaseUC\*.exe" })
+    ,[AppDefinition]::new("Naughter.StartX",                "Standard",   [OSType]::x64, "apps\naughter",                                            "startx.zip",              "bin",                      [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ExtractWildcard = "ReleaseU64\*.exe" })
+    ,[AppDefinition]::new("Naughter.StartX",                "Standard",   [OSType]::x32, "apps\naughter",                                            "startx.zip",              "bin",                      [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ExtractWildcard = "ReleaseU\*.exe" })
+    ,[AppDefinition]::new("Microsoft.Editor",               "Standard",   [OSType]::x64, "apps\Microsoft\Edit",                                      "*.zip",                   "bin",                      [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ExtractWildcard = "*.exe" })
+    ,[AppDefinition]::new("Microsoft.File.Checksum.Tool",   "Standard",   [OSType]::Any, "apps\Microsoft\FileChecksumIntegrityVerifier",             "*.zip",                   "bin",                      [InstallType]::ExtractZip)
+    ,[AppDefinition]::new("Microsoft.XSL.Tool",             "Standard",   [OSType]::Any, "apps\Microsoft\msxsl",                                     "msxsl.exe",               "bin",                      [InstallType]::CopyFiles)
+    ,[AppDefinition]::new("Microsoft.SysInternals",         "Standard",   [OSType]::Any, "apps\Microsoft\SysInternals",                              "*.zip",                   "sysinternals",             [InstallType]::ExtractZip)
+    ,[AppDefinition]::new("Microsoft.Win2000.Resource.Kit", "Standard",   [OSType]::Any, "apps\Microsoft\Win2000ResourceKit",                        "*.zip",                   "bin",                      [InstallType]::ExtractZip)
     ,[AppDefinition]::new("XmlStarlet",                     "Standard",   [OSType]::Any, "apps\xmlstarlet",                                          "*.zip",                   "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ), @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ExtractWildcard = "**\*.exe **\readme **\doc\*.txt" })
     ,[AppDefinition]::new("WhyIsThatRunning",               "Standard",   [OSType]::Any, "apps\WhyIsThatRunning",                                    "witr*.zip",               "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes, [InstallAction]::RenameLicence ))
     ,[AppDefinition]::new("K9S",                            "Developer",  [OSType]::x64, "apps\k9s",                                                 "k9s*.zip",                "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes, [InstallAction]::RenameLicence ))
@@ -600,7 +604,7 @@ $defined_apps = @(
     ,[AppDefinition]::new("F2",                             "Standard",   [OSType]::x32, "apps\F2",                                                  "f2*86*.zip",              "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ), @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ExtractWildcard = "**\*.exe **\readme.md **\scripts\*" })
     ,[AppDefinition]::new("K9S",                            "Developer",  [OSType]::x64, "apps\k9s",                                                 "k9s*64*.zip",             "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes, [InstallAction]::RenameLicence ), @{ [InstallParameter]::ExtractCommand = "e" })
     ,[AppDefinition]::new("RxRepl",                         "Standard",   [OSType]::Any, "apps\rxrepl",                                              "rxrepl*.zip",             "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ))
-    ,[AppDefinition]::new("MSR Match-Search-Replace",       "Standard",   [OSType]::Any, "apps\msr",                                                 "*.exe",                   "bin",                      [InstallType]::CopyFiles,  @( [InstallAction]::RenameReadmes ), @{ [InstallParameter]::RenameTarget = "msr-*.exe=msr.exe" })
+    ,[AppDefinition]::new("MSR.Match-Search-Replace",       "Standard",   [OSType]::Any, "apps\msr",                                                 "*.exe",                   "bin",                      [InstallType]::CopyFiles,  @( [InstallAction]::RenameReadmes ), @{ [InstallParameter]::RenameTarget = "msr-*.exe=msr.exe" })
 
     # Wndows Apps
     ,[AppDefinition]::new("WindowExtensions",               "Standard",   [OSType]::Any, "apps-win\martinsmith1968\WindowExtensions",                "*.zip",                   "mswin\WindowExtensions",   [InstallType]::ExtractZip, @{ [InstallParameter]::ShortcutFilenames = "WindowExtensions.exe=Window Extensions" ; [InstallParameter]::ShortcutTarget = "shell:startup" })
