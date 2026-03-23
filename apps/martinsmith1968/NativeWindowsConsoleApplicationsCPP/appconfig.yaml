@@ -2,6 +2,7 @@ version: 1
 
 apps:
   - Id: My.Native.CPP.Console.Apps
+    Description: My Native C++ Console Applications
     GroupName: Essentials
     OSType: x64
     SourceFolder: apps\martinsmith1968\NativeWindowsConsoleApplicationsCPP
