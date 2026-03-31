@@ -14,4 +14,4 @@ IF NOT "%~1" == "" (
   GOTO :PARSEOPTS
 )
 
-"%SCRIPTPATH%\StartApp.cmd" /n "%SCRIPTNAME%" /t "Beyond Compare" /e "BCompare.exe" /f "Beyond Compare 5" /d "Compare 2 Files / Folders" /od "[file target 1] [file target 2] { [options] }"  /us /rac 1 /nqa %ARGS%
+"%SCRIPTPATH%\StartApp.cmd" /n "%SCRIPTNAME%" /t "Beyond Compare" /e "BCompare.exe" /f "Beyond Compare 5" /d "Compare 2 Files / Folders" /od "[file target 1] [file target 2] { [options] }"  /us /rac 2 /nqa %ARGS%
