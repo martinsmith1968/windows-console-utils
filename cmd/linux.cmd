@@ -1,0 +1,138 @@
+@ECHO OFF
+
+SETLOCAL EnableDelayedExpansion
+
+SET SCRIPTPATH=%~dp0
+SET SCRIPTNAME=%~n0
+SET SCRIPTFULLFILENAME=%~dpnx0
+
+FOR %%* IN (.) DO SET CURRENTDIR=%%~dpn*
+FOR %%* IN (.) DO SET CURRENTDIRNAME=%%~n*
+
+SET ARGPOS=0
+SET DEBUG=N
+SET DRYRUN=N
+SET USAGE=N
+
+SET COMMANDPREFIX=
+
+SET DISTRO=ubuntu
+SET DISTROVERSION=latest
+SET INSTANCENAME=
+SET LOCALVOLUME=N
+SET LOCALVOLUMENAME=localfiles
+SET RESTART=N
+
+REM **********************************************************************
+REM ** Guides
+REM ** - Variable Substring : https://ss64.com/nt/syntax-substring.html
+REM **********************************************************************
+
+
+:PARSE
+IF "%~1" == "" GOTO :VALIDATE
+
+IF /I "%~1" == "/?" SET USAGE=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-?" SET USAGE=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/X" SET DEBUG=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-X" SET DEBUG=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/Z" SET DRYRUN=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-Z" SET DRYRUN=Y&&SHIFT&&GOTO :PARSE
+
+IF /I "%~1" == "/D"  SET DISTRO=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-D"  SET DISTRO=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/V"  SET DISTROVERSION=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-V"  SET DISTROVERSION=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/N"  SET INSTANCENAME=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-N"  SET INSTANCENAME=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/LV" SET LOCALVOLUME=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-LV" SET LOCALVOLUME=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/LVN" SET LOCALVOLUMENAME=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-LVN" SET LOCALVOLUMENAME=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/S"   SET RESTART=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-S"   SET RESTART=Y&&SHIFT&&GOTO :PARSE
+
+SET  /A ARGPOS+=1
+
+CALL :USAGE
+CALL :ERROR "Unknown argument at position: %ARGPOS% - %~1"
+GOTO :EOF
+
+
+:VALIDATE
+IF "%USAGE%" == "Y" (
+  CALL :USAGE
+  GOTO :EOF
+)
+
+IF "%INSTANCENAME%" == "" SET INSTANCENAME=%DISTRO%
+
+
+:GO
+IF "%DEBUG%" == "Y" (
+    ECHO.DISTRO          = %DISTRO%
+    ECHO.DISTROVERSION   = %DISTROVERSION%
+    ECHO.INSTANCENAME    = %INSTANCENAME%
+    ECHO.LOCALVOLUME     = %LOCALVOLUME%
+    ECHO.LOCALVOLUMENAME = %LOCALVOLUMENAME%
+    ECHO.RESTART         = %RESTART%
+)
+
+SET COMMANDARGS=-it --name "%INSTANCENAME%"
+IF "%LOCALVOLUME%" == "Y" SET COMMANDARGS=%COMMANDARGS% -v .:/%LOCALVOLUMENAME%
+
+IF "%DRYRUN%" == "Y" SET COMMANDPREFIX=ECHO.
+
+IF "%RESTART%" == "Y" (
+    @IF "%DEBUG%" == "Y" @ECHO ON
+    %COMMANDPREFIX%docker rm -f "%INSTANCENAME%"
+    @IF "%DEBUG%" == "Y" @ECHO OFF
+)
+
+docker ps -a --filter "name=%INSTANCENAME%" --format "{{.Names}}" | FINDSTR /I "%INSTANCENAME%" >NUL
+IF %ERRORLEVEL% EQU 0 GOTO :RESUME
+
+:RUN
+@IF "%DEBUG%" == "Y" @ECHO ON
+%COMMANDPREFIX%docker run %COMMANDARGS% %DISTRO%:%DISTROVERSION%
+@IF "%DEBUG%" == "Y" @ECHO OFF
+
+GOTO :EOF
+
+:RESUME
+@IF "%DEBUG%" == "Y" @ECHO ON
+%COMMANDPREFIX%docker start -ai "%INSTANCENAME%"
+@IF "%DEBUG%" == "Y" @ECHO OFF
+
+GOTO :EOF
+
+
+:USAGE
+ECHO.%SCRIPTNAME% - Launch an interactive Linux Container with Docker
+ECHO.
+ECHO.Usage: %SCRIPTNAME% { [options] }
+ECHO.
+ECHO.Options:
+ECHO. /D [name]    - Specify Distro (Default: %DISTRO%)
+ECHO. /V [version] - Specify Distro Version (Default: %DISTROVERSION%)
+ECHO. /N [name]    - Specify Instance Name (Default: %INSTANCENAME%)
+ECHO. /LV          - Enable Local Volume
+ECHO. /LVN [name]  - Specify Local Volume Name (Default: %LOCALVOLUMENAME%)
+ECHO.
+ECHO. /X  - Show Debug Information
+ECHO. /Z  - Dry Run
+ECHO. /?  - Display this help message
+
+GOTO :EOF
+
+
+:ERROR
+SET ERROTEXT=
+:ERRORLOOP
+IF NOT "%~1" == "" (
+  SET ERRORTEXT=%ERRORTEXT% %~1
+  SHIFT
+  GOTO :ERRORLOOP
+)
+ECHO.ERROR:%ERRORTEXT%
+GOTO :EOF
