@@ -442,11 +442,21 @@ GOTO :EOF
 
 
 REM --------------------------------------------------------------------------------
-:SHOWCOMMANDBANNER
+:SHOWBANNER
 IF "%~1" == "" GOTO :EOF
 
 ECHO.
 BANNERTEXT "%~1" @%SCRIPTPATH%\%SCRIPTNAME%.bannertext.options
+
+GOTO :EOF
+
+
+REM --------------------------------------------------------------------------------
+:SHOWCOMMANDBANNER
+IF "%~1" == "" GOTO :EOF
+
+ECHO.
+BANNERTEXT "%~1" @%SCRIPTPATH%\%SCRIPTNAME%.bannertext.options -hlc "-" -tlc "-"
 
 GOTO :EOF
 
