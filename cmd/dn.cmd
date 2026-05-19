@@ -2,6 +2,13 @@
 
 SETLOCAL EnableDelayedExpansion
 
+REM ********************************************************************************
+REM ** TODO
+REM ** - Add support for Code Coverage Reports (g)
+REM **   https://edgamat.com/2025/01/04/Code-Coverage-With-Dotnet.html
+REM 
+REM ********************************************************************************
+
 SET SCRIPTPATH=%~dp0
 SET SCRIPTNAME=%~n0
 SET SCRIPTFULLFILENAME=%~dpnx0
