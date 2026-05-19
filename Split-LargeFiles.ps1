@@ -47,7 +47,7 @@ if (!(Test-Path $command -PathType Leaf)) {
 }
 
 $candidates = Get-LargeFiles -threshold $threshold -file_extension "*.zip"
-Write-Host "Found $($items.count) candidate files larger than $($threshold / 1MB)MB"
+Write-Host "Found $($candidates.count) candidate files larger than $($threshold / 1MB)MB"
 
 $items = @()
 foreach($candidate in $candidates) {
