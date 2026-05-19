@@ -137,7 +137,7 @@ ECHO.Usage: %~n0 [command] [options]
 ECHO.
 ECHO.Commands:
 ECHO.clean        - Clean the current solution / target [c]
-ECHO.restore      - Restore the packages for the current solution / target [e]
+ECHO.restore      - Restore the packages for the current solution / target [s]
 ECHO.build        - Build the current solution / target [b]
 ECHO.test         - Run tests for the current solution / target [t]
 ECHO.pack         - Pack the current solution / target [p]
@@ -149,14 +149,14 @@ ECHO.rebuild      - clean and build [rb]
 ECHO.rebuildtest  - clean, rebuild and test a solution [rbt]
 ECHO.
 ECHO.You can concatenate commands using the shortcuts, to execute those commands in sequence.
-ECHO. E.g. 'cebtp' will execute 'clean', 'restore', 'build', 'test', and 'pack'.
+ECHO. E.g. 'csbtp' will execute 'clean', 'restore', 'build', 'test', and 'pack'.
 ECHO.
 ECHO.Options:
 ECHO./C [configuration] - Set the build configuration
 ECHO./A [arguments]     - Add the arguments 
 ECHO./Q                 - Suppress output (Verbosity: quiet)
 ECHo./Y [verbosity]     - Set the verbosity level (default: minimal) (q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic])
-ECHO./Y0[-4]            - Set the Verbosity level (0=quiet, 1=minimal, 2=normal, 3=detailed, 4=diagnostic)
+ECHO./Y[0-4]            - Set the Verbosity level (0=quiet, 1=minimal, 2=normal, 3=detailed, 4=diagnostic)
 
 GOTO :EOF
 
