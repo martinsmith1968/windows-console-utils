@@ -13,6 +13,7 @@ SET ARGPOS=0
 SET DEBUG=N
 SET DRYRUN=N
 SET USAGE=N
+SET VERBOSE=N
 
 SET COMMANDPREFIX=
 
@@ -22,6 +23,8 @@ SET INSTANCENAME=
 SET LOCALVOLUME=N
 SET LOCALVOLUMENAME=localfiles
 SET RESTART=N
+SET SHOWTITLE=Y
+SET CONSOLETITLE=
 
 REM **********************************************************************
 REM ** Guides
@@ -38,11 +41,15 @@ IF /I "%~1" == "/X" SET DEBUG=Y&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "-X" SET DEBUG=Y&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "/Z" SET DRYRUN=Y&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "-Z" SET DRYRUN=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/V" SET VERBOSE=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-V" SET VERBOSE=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/V-" SET VERBOSE=N&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-V-" SET VERBOSE=N&&SHIFT&&GOTO :PARSE
 
 IF /I "%~1" == "/D"  SET DISTRO=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "-D"  SET DISTRO=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "/V"  SET DISTROVERSION=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "-V"  SET DISTROVERSION=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/DV"  SET DISTROVERSION=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-DV"  SET DISTROVERSION=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "/N"  SET INSTANCENAME=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "-N"  SET INSTANCENAME=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "/LV" SET LOCALVOLUME=Y&&SHIFT&&GOTO :PARSE
@@ -51,6 +58,10 @@ IF /I "%~1" == "/LVN" SET LOCALVOLUMENAME=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "-LVN" SET LOCALVOLUMENAME=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "/S"   SET RESTART=Y&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "-S"   SET RESTART=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/NT" SET SHOWTITLE=N&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-NT" SET SHOWTITLE=N&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/T"  SET CONSOLETITLE=%~2&& SET SHOWTITLE=Y&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-T"  SET CONSOLETITLE=%~2&& SET SHOWTITLE=Y&&SHIFT&&SHIFT&&GOTO :PARSE
 
 SET  /A ARGPOS+=1
 
@@ -84,6 +95,7 @@ IF "%LOCALVOLUME%" == "Y" SET COMMANDARGS=%COMMANDARGS% -v .:/%LOCALVOLUMENAME%
 IF "%DRYRUN%" == "Y" SET COMMANDPREFIX=ECHO.
 
 IF "%RESTART%" == "Y" (
+    ECHO.Removing: %INSTANCENAME%
     @IF "%DEBUG%" == "Y" @ECHO ON
     %COMMANDPREFIX%docker rm -f "%INSTANCENAME%"
     @IF "%DEBUG%" == "Y" @ECHO OFF
@@ -92,18 +104,37 @@ IF "%RESTART%" == "Y" (
 docker ps -a --filter "name=%INSTANCENAME%" --format "{{.Names}}" | FINDSTR /I "%INSTANCENAME%" >NUL
 IF %ERRORLEVEL% EQU 0 GOTO :RESUME
 
+
 :RUN
+if "%CONSOLETITLE%" == "" SET CONSOLETITLE=%DISTRO% %DISTROVERSION% - %INSTANCENAME%
+IF "%VERBOSE%" == "Y" (
+  ECHO.Running: %DISTRO%:%DISTROVERSION%
+)
 @IF "%DEBUG%" == "Y" @ECHO ON
 %COMMANDPREFIX%docker run %COMMANDARGS% %DISTRO%:%DISTROVERSION%
 @IF "%DEBUG%" == "Y" @ECHO OFF
 
-GOTO :EOF
+GOTO :FINISH
+
 
 :RESUME
+if "%CONSOLETITLE%" == "" SET CONSOLETITLE=%INSTANCENAME%
+IF "%VERBOSE%" == "Y" (
+  ECHO.Resuming: %INSTANCENAME%
+)
 @IF "%DEBUG%" == "Y" @ECHO ON
 %COMMANDPREFIX%docker start -ai "%INSTANCENAME%"
 @IF "%DEBUG%" == "Y" @ECHO OFF
 
+GOTO :FINISH
+
+
+:FINISH
+IF "%SHOWTITLE%" == "Y" (
+  IF NOT "%CONSOLETITLE%" == "" (
+    TITLE %CONSOLETITLE% - %SCRIPTNAME%
+  )
+)
 GOTO :EOF
 
 
@@ -113,13 +144,15 @@ ECHO.
 ECHO.Usage: %SCRIPTNAME% { [options] }
 ECHO.
 ECHO.Options:
-ECHO. /D [name]    - Specify Distro (Default: %DISTRO%)
-ECHO. /V [version] - Specify Distro Version (Default: %DISTROVERSION%)
-ECHO. /N [name]    - Specify Instance Name (Default: %INSTANCENAME%)
-ECHO. /LV          - Enable Local Volume
-ECHO. /LVN [name]  - Specify Local Volume Name (Default: %LOCALVOLUMENAME%)
+ECHO. /D [name]     - Specify Distro (Default: %DISTRO%)
+ECHO. /DV [version] - Specify Distro Version (Default: %DISTROVERSION%)
+ECHO. /N [name]     - Specify Instance Name (Default: %INSTANCENAME%)
+ECHO. /LV           - Enable Local Volume
+ECHO. /LVN [name]   - Specify Local Volume Name (Default: %LOCALVOLUMENAME%)
+ECHO. /NT           - Disable Console Title
+ECHO. /T [text]     - Specify Console title to use (Default: %DISTRO% %DISTROVERSION% - %INSTANCENAME%)
 ECHO.
-ECHO. /X  - Show Debug Information
+ECHO. /V  - Activate Verbose mode
 ECHO. /Z  - Dry Run
 ECHO. /?  - Display this help message
 
