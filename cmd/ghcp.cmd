@@ -17,6 +17,7 @@ SET ARGPOS=0
 SET DEBUG=Y
 SET DRYRUN=N
 SET USAGE=N
+SET VERBOSE=N
 
 SET COMMANDPREFIX=
 
@@ -24,6 +25,8 @@ SET AGENT=squad
 SET YOLO=Y
 SET RESUME=N
 SET CLEARSCREENAFTER=Y
+SET AUTOTITLEMODE=CD
+SET TITLE=
 
 
 :PARSE
@@ -35,6 +38,8 @@ IF /I "%~1" == "/X" SET DEBUG=Y&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "-X" SET DEBUG=Y&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "/Z" SET DRYRUN=Y&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "-Z" SET DRYRUN=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/V" SET VERBOSE=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-V" SET VERBOSE=Y&&SHIFT&&GOTO :PARSE
 
 IF /I "%~1" == "/Y"  SET YOLO=Y&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "-Y"  SET YOLO=Y&&SHIFT&&GOTO :PARSE
@@ -42,8 +47,14 @@ IF /I "%~1" == "/Y-" SET YOLO=N&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "-Y-" SET YOLO=N&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "/R"  SET RESUME=Y&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "-R"  SET RESUME=Y&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "/C"  SET CLEARSCREENAFTER=N&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "-C"  SET CLEARSCREENAFTER=N&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/C"  SET CLEARSCREENAFTER=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-C"  SET CLEARSCREENAFTER=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/C-" SET CLEARSCREENAFTER=N&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-C-" SET CLEARSCREENAFTER=N&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/AT" SET AUTOTITLEMODE=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-AT" SET AUTOTITLEMODE=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/T"  SET TITLE=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-T"  SET TITLE=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
 
 SET /A ARGPOS+=1
 REM IF %ARGPOS% EQU 1 SET COMMAND=%~1&&SHIFT&&GOTO :PARSE
@@ -66,10 +77,22 @@ IF "%DEBUG%" == "Y" (
     ECHO.RESUME = %RESUME%
 )
 
+IF "%TITLE%" == "" (
+  IF NOT "%AUTOTITLEMODE%" == "" (
+    IF "%AUTOTITLEMODE%" == "CD" (
+      CALL :SETTITLEBYPATHNAME "%CD%"
+    ) ELSE (
+      CALL TITL.CMD %AUTOTITLEMODE%
+      SET TITLE=!CONSOLE_TITLE!
+    )
+  )
+)
+
 SET ARGS=
 IF NOT "%AGENT%" == "" SET ARGS=%ARGS% --agent %AGENT%
 IF "%YOLO%" == "Y"     SET ARGS=%ARGS% --yolo
 IF "%RESUME%" == "Y"   SET ARGS=%ARGS% --resume
+IF NOT "%TITLE%" == "" SET ARGS=%ARGS% --name "%TITLE%"
 
 IF "%DEBUG%" == "Y" (
   ECHO.ARGS   = %ARGS%
@@ -87,14 +110,21 @@ GOTO :EOF
 
 
 :USAGE
-ECHO.%SCRIPTNAME% - Sample Command with parsing
+ECHO.%SCRIPTNAME% - Lauch GitHub Copilot CLI with some options
 ECHO.
-ECHO.Usage: %SCRIPTNAME% [wildcard] [command] { [options] }
+ECHO.Usage: %SCRIPTNAME% { [options] }
 ECHO.
 ECHO.Options:
-ECHO. /1  - Some Option 1
-ECHO. /2  - Some Option 2
-ECHO. /3  - Some Option 3
+ECHO. /Y[-]       - Activate / Deactivate YoLo mode (Default: %YOLO%)
+ECHO. /C[-]       - Activate / Deactivate Clear Screen After mode (Default: %CLEARSCREENAFTER%)
+ECHO. /R          - Resume a previous session if one exists
+ECHO. /T [text]   - Specify Console title to use (Default: %DISTRO% %DISTROVERSION% - %INSTANCENAME%)
+ECHO. /AT [mode]  - Auto-generate Console title based on Distro, DistroVersion and InstanceName
+ECHO.
+ECHO. /V  - Activate Verbose mode
+ECHO. /Z  - Dry Run
+ECHO. /X  - Activate Debug Mode
+ECHO. /?  - Display this help message
 
 GOTO :EOF
 
@@ -108,4 +138,9 @@ IF NOT "%~1" == "" (
   GOTO :ERRORLOOP
 )
 ECHO.ERROR:%ERRORTEXT%
+GOTO :EOF
+
+
+:SETTITLEBYPATHNAME
+SET TITLE=%~nx1
 GOTO :EOF
