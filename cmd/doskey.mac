@@ -1,4 +1,3 @@
-macros=doskey /macros $*
 l=ls --color=auto $*
 ll=ls -l --color=auto $*
 la=ls -la --color=auto $*
@@ -18,10 +17,10 @@ vpip=python -m pip $*
 loge=LogExpert $*
 kc=kubectl $*
 ct=ConTEXT $*
+cu=CudaText $*
 g=go $*
 ups=PwRunner.cmd $*
 upy=PyRunner.cmd $*
 ce=ConEmu $*
 sw=stopwatch $*
 xp=explore $*
-
