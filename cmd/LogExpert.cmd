@@ -19,4 +19,4 @@ IF NOT "%~1" == "" (
   GOTO :PARSEOPTS
 )
 
-"%SCRIPTPATH%\StartApp.cmd" /n "%SCRIPTNAME%" /t "LogExpert" /e "logexpert.exe" /f "LogExpert" /d "Tail a file in LogExpert" /od "[filename] { [options] }" /oa "-l nn   Line to focus the cursor on" /us /rac 1 /nqa %ARGS%
+"%SCRIPTPATH%\StartApp.cmd" /n "%SCRIPTNAME%" /t "LogExpert" /e "logexpert.exe" /f "LogExpert" /d "Tail a file in LogExpert" /od "[filename] { [options] }" /oa "-l nn   Line to focus the cursor on" /us /rac 1 %ARGS%

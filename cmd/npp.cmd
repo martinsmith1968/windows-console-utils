@@ -19,4 +19,4 @@ IF NOT "%~1" == "" (
   GOTO :PARSEOPTS
 )
 
-"%SCRIPTPATH%\StartApp.cmd" /n "%SCRIPTNAME%" /t "Notepad++" /e "notepad++.exe" /f "notepad++" /d "Edit a file in Notepad++" /od "[filename] { [options] }" /oa "-l nn   Line to focus the cursor on" /oa "-c nn   Column to focus the cursor on" /us /rac 1 /nqa %ARGS%
+"%SCRIPTPATH%\StartApp.cmd" /n "%SCRIPTNAME%" /t "Notepad++" /e "notepad++.exe" /f "notepad++" /d "Edit a file in Notepad++" /od "[filename] { [options] }" /oa "-l nn   Line to focus the cursor on" /oa "-c nn   Column to focus the cursor on" /us /rac 1 %ARGS%

@@ -38,7 +38,7 @@ GOTO :EOF
 :USAGE
 ECHO.%SCRIPTNAME% - Download a file via URL
 ECHO.
-ECHO.Usage: %~n0 [filename]
+ECHO.Usage: %SCRIPTNAME% [filename]
 
 GOTO :EOF
 

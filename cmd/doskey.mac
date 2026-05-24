@@ -1,8 +1,7 @@
-macros=doskey /macros $*
 l=ls --color=auto $*
 ll=ls -l --color=auto $*
 la=ls -la --color=auto $*
-d=dir /ogen $*
+d=dir $*
 t=titl N $*
 ps=pwsh $*
 ps2=powershell $*
@@ -18,8 +17,11 @@ vpip=python -m pip $*
 loge=LogExpert $*
 kc=kubectl $*
 ct=ConTEXT $*
+cu=CudaText $*
 g=go $*
 ups=PwRunner.cmd $*
 upy=PyRunner.cmd $*
 ce=ConEmu $*
-le=logexpert $*
+sw=stopwatch $*
+xp=explore $*
+hex=imhex $*

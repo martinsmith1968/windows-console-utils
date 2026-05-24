@@ -2,6 +2,13 @@
 
 SETLOCAL EnableDelayedExpansion
 
+REM ********************************************************************************
+REM ** TODO
+REM ** - Add support for Code Coverage Reports (g)
+REM **   https://edgamat.com/2025/01/04/Code-Coverage-With-Dotnet.html
+REM 
+REM ********************************************************************************
+
 SET SCRIPTPATH=%~dp0
 SET SCRIPTNAME=%~n0
 SET SCRIPTFULLFILENAME=%~dpnx0
@@ -137,7 +144,7 @@ ECHO.Usage: %~n0 [command] [options]
 ECHO.
 ECHO.Commands:
 ECHO.clean        - Clean the current solution / target [c]
-ECHO.restore      - Restore the packages for the current solution / target [e]
+ECHO.restore      - Restore the packages for the current solution / target [s]
 ECHO.build        - Build the current solution / target [b]
 ECHO.test         - Run tests for the current solution / target [t]
 ECHO.pack         - Pack the current solution / target [p]
@@ -149,14 +156,14 @@ ECHO.rebuild      - clean and build [rb]
 ECHO.rebuildtest  - clean, rebuild and test a solution [rbt]
 ECHO.
 ECHO.You can concatenate commands using the shortcuts, to execute those commands in sequence.
-ECHO. E.g. 'cebtp' will execute 'clean', 'restore', 'build', 'test', and 'pack'.
+ECHO. E.g. 'csbtp' will execute 'clean', 'restore', 'build', 'test', and 'pack'.
 ECHO.
 ECHO.Options:
 ECHO./C [configuration] - Set the build configuration
 ECHO./A [arguments]     - Add the arguments 
 ECHO./Q                 - Suppress output (Verbosity: quiet)
 ECHo./Y [verbosity]     - Set the verbosity level (default: minimal) (q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic])
-ECHO./Y0[-4]            - Set the Verbosity level (0=quiet, 1=minimal, 2=normal, 3=detailed, 4=diagnostic)
+ECHO./Y[0-4]            - Set the Verbosity level (0=quiet, 1=minimal, 2=normal, 3=detailed, 4=diagnostic)
 
 GOTO :EOF
 
@@ -425,11 +432,28 @@ SET APP=%SCRIPTPATH%\..\win\dotnetver.exe
 GOTO :EOF
 
 
+:USAGE
+ECHO.%SCRIPTNAME% - .NET command helper
+ECHO.Usage: %SCRIPTNAME% [command] [options]
+ECHO.
+ECHO.Commands:
+ECHO.rebuild     - clean and rebuild a solution (Shortcut: rb / cb)
+ECHO.rebuildtest - clean, rebuild and test a solution (Shortcut: rbt / cbt)
+ECHO.run         - run a project (Shortcut: r)
+ECHO.
+ECHO.Options:
+ECHO./C [configuration] - Set the build configuration
+ECHO./A [arguments]     - Add the arguments 
+
+GOTO :EOF
+
+
 REM --------------------------------------------------------------------------------
 :SHOWBANNER
 IF "%~1" == "" GOTO :EOF
 
-BANNERTEXT "%~1" @%SCRIPTPATH%\%SCRIPTNAME%.bannertext.options -fln 1
+ECHO.
+BANNERTEXT "%~1" @%SCRIPTPATH%\%SCRIPTNAME%.bannertext.options
 
 GOTO :EOF
 
@@ -439,7 +463,7 @@ REM ----------------------------------------------------------------------------
 IF "%~1" == "" GOTO :EOF
 
 ECHO.
-BANNERTEXT "%~1" @%SCRIPTPATH%\%SCRIPTNAME%.bannertext.options
+BANNERTEXT "%~1" @%SCRIPTPATH%\%SCRIPTNAME%.bannertext.options -hlc "-" -tlc "-"
 
 GOTO :EOF
 
@@ -450,3 +474,4 @@ REM ----------------------------------------------------------------------------
 :: The argument for this subroutine is the variable NAME.
 FOR %%i IN ("a=A" "b=B" "c=C" "d=D" "e=E" "f=F" "g=G" "h=H" "i=I" "j=J" "k=K" "l=L" "m=M" "n=N" "o=O" "p=P" "q=Q" "r=R" "s=S" "t=T" "u=U" "v=V" "w=W" "x=X" "y=Y" "z=Z") DO CALL SET "%1=%%%1:%%~i%%"
 GOTO:EOF
+

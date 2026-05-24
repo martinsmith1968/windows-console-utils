@@ -49,9 +49,9 @@ GOTO :EOF
 
 
 :USAGE
-ECHO.%~n0 - Create and Change to a new directory
+ECHO.%SCRIPTNAME% - Create and Change to a new directory
 ECHO.
-ECHO.%~n0 [folder] { [switches] }
+ECHO.%SCRIPTNAME% [folder] { [switches] }
 ECHO.
 ECHO.Switches:
 ECHO.-Q  - Quiet mode - do not display messages

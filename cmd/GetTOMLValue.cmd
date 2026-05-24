@@ -2,6 +2,10 @@ REM @ECHO OFF
 
 SETLOCAL
 
+SET SCRIPTPATH=%~dp0
+SET SCRIPTNAME=%~n0
+SET SCRIPTFULLFILENAME=%~dpnx0
+
 SET DEBUG=N
 SET KEYNAME=
 SET FILENAME=
@@ -45,9 +49,9 @@ GOTO :EOF
 
 
 :USAGE
-ECHO.%~n0 - Get a value from a TOML file
+ECHO.%SCRIPTNAME% - Get a value from a TOML file
 ECHO.
-ECHO.%~n0 [keyname] [options]
+ECHO.%SCRIPTNAME% [keyname] [options]
 ECHO.
 ECHO.Options:
 ECHO.-f [filename]		The filename to read from

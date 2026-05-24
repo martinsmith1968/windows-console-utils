@@ -20,8 +20,42 @@ param (
 
 . $PSScriptRoot\Include-Scripts.ps1
 
-$items = Get-LargeFiles -threshold $threshold
+$candidates = Get-LargeFiles -threshold $threshold
 Write-Host "Found $($items.count) candidate files larger than $($threshold / 1MB)MB"
+
+$items = @()
+foreach($candidate in $candidates) {
+    Push-Location $candidate.Directory
+    
+    $include = $True
+
+    if ($include) {
+        $path_to_check = $candidate.Directory
+
+        do {
+            $file_to_check = Join-Path $path_to_check ".gitkeep"
+            if (Test-Path -Path $file_to_check) {
+                $include = $False
+                Write-Host "Skipping $($candidate.FullName) - .gitkeep file found in directory: $($path_to_check.FullName)"
+            }
+            $path_to_check = $path_to_check.Parent
+        } while ($path_to_check.FullName -ne $path_to_check.Root.Target.FullName)
+    }
+
+    if ($include -And (Test-Path -Path ".gitignore")) {
+        $ignored_lines = Get-Content -Path ".gitignore"
+        if ($ignored_lines -contains $candidate.Name) {
+            $include = $False
+            Write-Host "Skipping $($candidate.FullName) - already in .gitignore"
+        }
+    }
+    
+    if ($include) {
+        $items += $candidate
+    }
+
+    Pop-Location
+}
 
 $index = 0
 if ($items.Count -gt 0) {
