@@ -2,7 +2,7 @@
 
 SETLOCAL
 
-CALL "%~dp0\Aliases.cmd"
+CALL "%~dp0\Aliases.cmd" INSTALL
 
 :CUSTOM
 SET CUSTOM_AUTORUN=%USERPROFILE%\MyAutorun.cmd

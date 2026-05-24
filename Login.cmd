@@ -88,10 +88,10 @@ REM ****************************************************************************
 :ENVIRONMENT
 ECHO.
 %SCRIPTPATH%\msbin\BANNERTEXT "Macros"
-SETX DIRCMD /OGEN > NUL
+SETX DIRCMD /OGNE
 
-CALL %SCRIPTPATH%\cmd\Aliases.Cmd
-%SYSTEMROOT%\System32\DOSKEY /MACROS
+CALL %SCRIPTPATH%\cmd\Aliases.Cmd INSTALL
+CALL %SCRIPTPATH%\cmd\Aliases.Cmd LIST
 
 
 REM ********************************************************************************

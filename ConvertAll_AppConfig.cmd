@@ -108,6 +108,9 @@ IF NOT "%COMMANDPREFIX%" == "" SET COMMANDSUFFIX=
 
 @IF "%DEBUG%" == "Y" @ECHO ON
 %COMMANDPREFIX%yq -p yaml -o json "%~dpnx1" %COMMANDSUFFIX% "%TARGET%"
+
+%COMMANDPREFIX%FART -v -i "%TARGET%" "$DefaultShortcutTarget$" "shell:programsmenu"
+%COMMANDPREFIX%FART -v -i "%TARGET%" "$DefaultShortcutFolder$" "utils"
 @IF "%DEBUG%" == "Y" @ECHO OFF
 
 IF NOT "%ALLOW_JSON_COMMENTS%" == "Y" (
