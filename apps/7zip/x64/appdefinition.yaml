@@ -1,0 +1,17 @@
+{
+  "Apps": [
+    {
+      "Id": "7za.command",
+      "Description": null,
+      "GroupName": "Mandatory",
+      "OSType": 1,
+      "SourceFolder": "apps\\7zip\\x64",
+      "SourceWildcard": "*.exe",
+      "TargetFolder": "bin",
+      "InstallType": 1,
+      "Actions": [],
+      "Parameters": {}
+    }
+  ],
+  "Version": 1
+}

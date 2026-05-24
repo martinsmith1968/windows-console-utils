@@ -95,6 +95,8 @@ enum CommandType {
     Install
     ListApps
     ListGroups
+    ConvertYAMLToJSON
+    ExportToYAML
 }
 
 enum OSType {
@@ -536,6 +538,19 @@ class AppDefinition{
     }
 }
 
+class AppDefinitionList {
+    [AppDefinition[]]$Apps
+    $Version = 1
+
+    AppDefinitionList() {
+        $this.Apps = @()
+    }
+
+    [void] AddApp([AppDefinition]$app) {
+        $this.Apps += $app
+    }
+}
+
 #------------------------------------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------------------------------------
@@ -602,7 +617,6 @@ $defined_apps = @(
     ,[AppDefinition]::new("K9S",                            "Developer",  [OSType]::x64, "apps\k9s",                                                 "k9s*.zip",                "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes, [InstallAction]::RenameLicence ))
     ,[AppDefinition]::new("F2",                             "Standard",   [OSType]::x64, "apps\F2",                                                  "f2*64*.zip",              "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ), @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ExtractWildcard = "**\*.exe **\readme.md **\scripts\*" })
     ,[AppDefinition]::new("F2",                             "Standard",   [OSType]::x32, "apps\F2",                                                  "f2*86*.zip",              "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ), @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ExtractWildcard = "**\*.exe **\readme.md **\scripts\*" })
-    ,[AppDefinition]::new("K9S",                            "Developer",  [OSType]::x64, "apps\k9s",                                                 "k9s*64*.zip",             "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes, [InstallAction]::RenameLicence ), @{ [InstallParameter]::ExtractCommand = "e" })
     ,[AppDefinition]::new("RxRepl",                         "Standard",   [OSType]::Any, "apps\rxrepl",                                              "rxrepl*.zip",             "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ))
     ,[AppDefinition]::new("MSR.Match-Search-Replace",       "Standard",   [OSType]::Any, "apps\msr",                                                 "*.exe",                   "bin",                      [InstallType]::CopyFiles,  @( [InstallAction]::RenameReadmes ), @{ [InstallParameter]::RenameTarget = "msr-*.exe=msr.exe" })
 
@@ -635,7 +649,7 @@ $defined_apps = @(
     ,[AppDefinition]::new("HotKey.Detective",               "System",     [OSType]::x64, "apps-win\ITachiLab\hotkey-detective",                      "hotkey-detective*.zip",   "win\nirsoft",              [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ), [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ExtractWildcard = "x64\*" ; [InstallParameter]::ShortcutFilenames = "hotkey*.exe=Hot Key Detective" }) ))
     ,[AppDefinition]::new("AlomWare.Toolbox",               "System",     [OSType]::Any, "apps-win\Alomware",                                        "Toolbox*.zip",            "win\Toolbox",              [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ShortcutFilenames = "Toolbox*.exe=AlomWare Toolbox" }) ))
     ,[AppDefinition]::new("SourceGit",                      "Developer",  [OSType]::Any, "apps-win\SourceGit",                                       "sourcegit*.zip",          "win\SourceGit",            [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ShortcutFilenames = "SourceGit*.exe=SourceGit" }) ))
-    ,[AppDefinition]::new("SourceGit Themes",               "Developer",  [OSType]::Any, "apps-win\SourceGit\Themes",                                "*.json",                  "win\SourceGit\Themes",     [InstallType]::CopyFiles)
+    ,[AppDefinition]::new("SourceGit.Themes",               "Developer",  [OSType]::Any, "apps-win\SourceGit\Themes",                                "*.json",                  "win\SourceGit\Themes",     [InstallType]::CopyFiles)
     ,[AppDefinition]::new("Optimizer",                      "System",     [OSType]::Any, "apps-win\hellzerg\Optimizer",                              "*.exe",                   "win",                      [InstallType]::CopyFiles, [hashtable]( ApplyStandardShortcutMenu(@{ [InstallParameter]::ShortcutFilenames = "Optimizer-*.exe=Optimizer" }) ))
     ,[AppDefinition]::new("dnGrep",                         "Standard",   [OSType]::x64, "apps-win\dnGrep",                                          "*x64*.exe",               "win\dnGrep",               [InstallType]::ExtractZip, @( [InstallAction]::ClearTargetFolder ), [hashtable]( ApplyStandardShortcutMenu(@{ [InstallParameter]::ShortcutFilenames = "dnGREP*.exe=dnGrep" }) ))
     ,[AppDefinition]::new("dnGrep",                         "Standard",   [OSType]::x32, "apps-win\dnGrep",                                          "*x86*.exe",               "win\dnGrep",               [InstallType]::ExtractZip, @( [InstallAction]::ClearTargetFolder ), [hashtable]( ApplyStandardShortcutMenu(@{ [InstallParameter]::ShortcutFilenames = "dnGREP*.exe=dnGrep" }) ))
@@ -650,16 +664,14 @@ $defined_apps = @(
     ,[AppDefinition]::new("ShareX",                         "Standard",   [OSType]::Any, "apps-win\ShareX",                                          "ShareX*.zip",             "win\ShareX",               [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ShortcutFilenames = "ShareX.exe=ShareX" }) ))
     ,[AppDefinition]::new("ImHex",                          "Developer",  [OSType]::Any, "apps-win\ImHex",                                           "imhex*.zip",              "win\ImHex",                [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ShortcutFilenames = "imhex.exe=ImHex" }) ))
     ,[AppDefinition]::new("TrayToolbar",                    "Standard",   [OSType]::Any, "apps-win\TrayToolbar",                                     "TrayToolbar*.zip",        "win",                      [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ShortcutFilenames = "TrayToolbar*.exe=TrayToolbar" }) ))
-    ,[AppDefinition]::new("Awesome Photo Finder",           "Advanced",   [OSType]::Any, "apps-win\Awesome Duplicate Photo Finder",                  "awesome*.zip",            "win",                      [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ShortcutFilenames = "AwesomePhoto*.exe=Awesome Duplicate Photo Finder" }) ))
+    ,[AppDefinition]::new("Awesome.Photo.Finder",           "Advanced",   [OSType]::Any, "apps-win\Awesome Duplicate Photo Finder",                  "awesome*.zip",            "win",                      [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ShortcutFilenames = "AwesomePhoto*.exe=Awesome Duplicate Photo Finder" }) ))
     ,[AppDefinition]::new("CertViewer",                     "Developer",  [OSType]::Any, "apps-win\dEajL3kA",                                        "CertViewer*.zip",         "win\CertViewer",           [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ShortcutFilenames = "CertViewer*.exe=Certificate Viewer" }) ))
     ,[AppDefinition]::new("LessMSI",                        "Developer",  [OSType]::Any, "apps-win\LessMSI",                                         "lessmsi*.zip",            "win\LessMSI",              [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ShortcutFilenames = "LessMSI*.exe=Less MSI" }) ))
     ,[AppDefinition]::new("NET.Dependency.Graph",           "Developer",  [OSType]::Any, "apps-win\mobzystems",                                      "depgraph*.zip",           "win\MobzSystems",          [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ShortcutFilenames = "DepGraph*.exe=NET Dependency Graph:Generate an HTML dependency graph of .NET assemblies" }) ))
     ,[AppDefinition]::new("AutoResXTranslator",             "Developer",  [OSType]::Any, "apps-win\AutoResXTranslator",                              "AutoResxTranslator*.zip", "win\AutoResXTranslator",   [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ExtractCommand = "e" ; [InstallParameter]::ShortcutFilenames = "AutoResXTranslator*.exe=AutoResXTranslator Resource Translator" }) ))
-    ,[AppDefinition]::new("dnGrep",                         "Standard",   [OSType]::x32, "apps-win\dnGrep",                                          "dnGrep*x86*.zip",         "win\dnGrep",               [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ShortcutFilenames = "dnGrep.exe=dnGrep" }) ))
-    ,[AppDefinition]::new("dnGrep",                         "Standard",   [OSType]::x64, "apps-win\dnGrep",                                          "dnGrep*x64*.zip",         "win\dnGrep",               [InstallType]::ExtractZip, [hashtable]( ApplyStandardShortcutMenu( @{ [InstallParameter]::ShortcutFilenames = "dnGrep.exe=dnGrep" }) ))
 
     # Miscellaneous
-    ,[AppDefinition]::new("Login Script",                   "Essentials", [OSType]::Any, "",                                                         "Login.cmd",               "",                         [InstallType]::CopyFiles, @{ [InstallParameter]::ShortcutFilenames = "Login.cmd=Login Script" ; [InstallParameter]::ShortcutTarget = "shell:startup" })
+    ,[AppDefinition]::new("Login.Script",                   "Essentials", [OSType]::Any, "",                                                         "Login.cmd",               "",                         [InstallType]::CopyFiles, @{ [InstallParameter]::ShortcutFilenames = "Login.cmd=Login Script" ; [InstallParameter]::ShortcutTarget = "shell:startup" })
     ,[AppDefinition]::new("Documentation",                  "Essentials", [OSType]::Any, "",                                                         "*.md",                    "",                         [InstallType]::CopyFiles )
 )
 
@@ -846,6 +858,28 @@ if ($commandType -eq [CommandType]::Install) {
     $allGroups = $defined_apps | Select-Object -ExpandProperty GroupName -Unique | Sort-Object
     foreach ($group in $allGroups) {
         Write-Host "   ${group}"
+    }
+} elseif ($commandType -eq [CommandType]::ConvertYAMLToJSON) {
+    Write-Host "-- Not Yet Implemented"
+} elseif ($commandType -eq [CommandType]::ExportToYAML) {
+    Write-Host "-- Broken - HashTable don't export and enums are numbers"
+    $grouped_apps = $defined_apps | Group-Object -Property SourceFolder
+    
+    # group by SourceFolder and write to a single file
+    foreach ($group in $grouped_apps) {
+
+        $definition_list = [AppDefinitionList]::new()
+        foreach ($app in $group.Group) {
+            $definition_list.AddApp($app)
+        }
+
+        Write-Host "-- Exporting: $($group.Name)"
+        $output_folder = Join-Path $PSScriptRoot $group.Name
+        $output_filename = Join-Path $output_folder "appdefinition.json"
+
+        $json = $definition_list | ConvertTo-Json -Depth 50
+        Set-Content -Path $output_filename -Value $json
+        break
     }
 } else {
     Write-Log "Unknown command: ${command}"

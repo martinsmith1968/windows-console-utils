@@ -1,0 +1,29 @@
+{
+  "Apps": [
+    {
+      "Id": "Login.Script",
+      "Description": null,
+      "GroupName": "Essentials",
+      "OSType": 0,
+      "SourceFolder": "",
+      "SourceWildcard": "Login.cmd",
+      "TargetFolder": "",
+      "InstallType": 1,
+      "Actions": "",
+      "Parameters": "System.Collections.Hashtable"
+    },
+    {
+      "Id": "Documentation",
+      "Description": null,
+      "GroupName": "Essentials",
+      "OSType": 0,
+      "SourceFolder": "",
+      "SourceWildcard": "*.md",
+      "TargetFolder": "",
+      "InstallType": 1,
+      "Actions": "",
+      "Parameters": "System.Collections.Hashtable"
+    }
+  ],
+  "Version": 1
+}
