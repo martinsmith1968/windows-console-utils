@@ -44,8 +44,8 @@ REM
 REM c - clean
 REM r - restore
 REM b - build
-REM p - pack
 REM t - test
+REM p - pack
 REM l - publish
 REM r - run
 REM v - version
@@ -53,46 +53,46 @@ REM v - version
 REM --------------------------------------------------------------------------------
 :PARSE
 IF /I "%~1" == "" GOTO :VALIDATE
-IF /I "%~1" == "/?" SET HELP=Y&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "-?" SET HELP=Y&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "/X" SET DEBUG=Y&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "-X" SET DEBUG=Y&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "/Z" SET DRYRUN=Y&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "-Z" SET DRYRUN=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/?"  SET HELP=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-?"  SET HELP=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/X"  SET DEBUG=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-X"  SET DEBUG=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/Z"  SET DRYRUN=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-Z"  SET DRYRUN=Y&&SHIFT&&GOTO :PARSE
 
-IF /I "%~1" == "/T" SET TARGET=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "-T" SET TARGET=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "/C" SET CONFIGURATION=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "-C" SET CONFIGURATION=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "/A" SET ARCHITECTURE=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "-A" SET ARCHITECTURE=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/T"  SET TARGET=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-T"  SET TARGET=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/C"  SET CONFIGURATION=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-C"  SET CONFIGURATION=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/A"  SET ARCHITECTURE=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-A"  SET ARCHITECTURE=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "/OS" SET OSPLATFORM=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "-OS" SET OSPLATFORM=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "/V" SET VERSION=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "-V" SET VERSION=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "/U" SET VERSIONSUFFIX=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "-U" SET VERSIONSUFFIX=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "/F" SET FRAMEWORK=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "-F" SET FRAMEWORK=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "/R" SET RUNTIMEIDENTIFIER=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "-R" SET RUNTIMEIDENTIFIER=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/V"  SET VERSION=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-V"  SET VERSION=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/U"  SET VERSIONSUFFIX=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-U"  SET VERSIONSUFFIX=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/F"  SET FRAMEWORK=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-F"  SET FRAMEWORK=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/R"  SET RUNTIMEIDENTIFIER=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-R"  SET RUNTIMEIDENTIFIER=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "/SC" SET ISSELFCONTAINED=Y&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "-SC" SET ISSELFCONTAINED=Y&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "/NB" SET NOBUILD=Y&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "-NB" SET NOBUILD=Y&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "/NR" SET NORESTORE=Y&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "-NR" SET NORESTORE=Y&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "/O" SET OUTPUTDIR=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "-O" SET OUTPUTDIR=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/O"  SET OUTPUTDIR=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-O"  SET OUTPUTDIR=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "/PO" SET PACKOUTPUTDIR=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "-PO" SET PACKOUTPUTDIR=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "/LP" SET LAUNCHPROFILE=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "-LP" SET LAUNCHPROFILE=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
 
-IF /I "%~1" == "/Q" SET VERBOSITY=quiet&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "-Q" SET VERBOSITY=quiet&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "/Y" SET VERBOSITY=%~2&&SHIFT%&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "-Y" SET VERBOSITY=%~2&&SHIFT%&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/Q"  SET VERBOSITY=quiet&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-Q"  SET VERBOSITY=quiet&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/Y"  SET VERBOSITY=%~2&&SHIFT%&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-Y"  SET VERBOSITY=%~2&&SHIFT%&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "/Y0" SET VERBOSITY=quiet&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "-Y0" SET VERBOSITY=quiet&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "/Y1" SET VERBOSITY=minimal&&SHIFT&&GOTO :PARSE
@@ -104,8 +104,8 @@ IF /I "%~1" == "-Y3" SET VERBOSITY=detailed&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "/Y4" SET VERBOSITY=diagnostic&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "-Y4" SET VERBOSITY=diagnostic&&SHIFT&&GOTO :PARSE
 
-IF /I "%~1" == "/A" SET APPARGS=%APPARGS% %~2&&SHIFT&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "-A" SET APPARGS=%APPARGS% %~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/A"  SET APPARGS=%APPARGS% %~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-A"  SET APPARGS=%APPARGS% %~2&&SHIFT&&SHIFT&&GOTO :PARSE
 
 SET /A ARGPOS+=1
 
@@ -125,6 +125,7 @@ GOTO :EOF
 :VALIDATE
 IF %COMMANDCOUNT% LSS 1 (
   CALL :USAGE
+  CALL :ERROR "No command specified."
   GOTO :EOF
 )
 
@@ -152,8 +153,8 @@ ECHO.publish      - Publish the current solution / target [u]
 ECHO.run          - Run the current project / target [r]
 ECHO.version      - Show the dotnet version / available versions [v]
 ECHO.
-ECHO.rebuild      - clean and build [rb]
-ECHO.rebuildtest  - clean, rebuild and test a solution [rbt]
+ECHO.rebuild      - clean and build [cb]
+ECHO.rebuildtest  - clean, rebuild and test a solution [cbt]
 ECHO.
 ECHO.You can concatenate commands using the shortcuts, to execute those commands in sequence.
 ECHO. E.g. 'csbtp' will execute 'clean', 'restore', 'build', 'test', and 'pack'.
@@ -166,15 +167,6 @@ ECHo./Y [verbosity]     - Set the verbosity level (default: minimal) (q[uiet], m
 ECHO./Y[0-4]            - Set the Verbosity level (0=quiet, 1=minimal, 2=normal, 3=detailed, 4=diagnostic)
 
 GOTO :EOF
-
-
-
-
-rebuild
-
-
-
-
 
 
 REM --------------------------------------------------------------------------------
@@ -202,7 +194,9 @@ GOTO :EOF
 REM --------------------------------------------------------------------------------
 :PARSECOMMAND
 SET PARSECOMMANDSUCCESS=N
+IF "%~1" == "" GOTO :EOF
 
+SET PARSECOMMANDSUCCESS=Y
 IF /I "%~1" == "clean"    CALL :ADDCOMMAND clean&& GOTO :EOF
 IF /I "%~1" == "restore"  CALL :ADDCOMMAND restore&& GOTO :EOF
 IF /I "%~1" == "build"    CALL :ADDCOMMAND build&& GOTO :EOF
@@ -217,13 +211,16 @@ IF /I "%~1" == "rebuild" (
   CALL :ADDCOMMAND build
   GOTO :EOF
 )
+if /I "%~1" == "rebuildtest" (
+  CALL :ADDCOMMAND clean
+  CALL :ADDCOMMAND build
+  CALL :ADDCOMMAND test
+  GOTO :EOF
+)
 
 SET COMMANDPARTS=%~1
 :PARSECOMMANDLOOP
-IF "%COMMANDPARTS%" == "" (
-  SET PARSECOMMANDSUCCESS=Y
-  GOTO :EOF
-)
+IF "%COMMANDPARTS%" == "" GOTO :EOF
 
 SET COMMANDPART=%COMMANDPARTS:~0,1%
 
@@ -244,6 +241,7 @@ IF /I "%COMMANDPART%" == "c" (
 ) ELSE IF /I "%COMMANDPART%" == "v" (
   CALL :ADDCOMMAND version
 ) ELSE (
+  SET PARSECOMMANDSUCCESS=N
   CALL :ERROR "Invalid command alias/abbreviation: %COMMANDPART%"
   GOTO :EOF
 )
@@ -432,22 +430,6 @@ SET APP=%SCRIPTPATH%\..\win\dotnetver.exe
 GOTO :EOF
 
 
-:USAGE
-ECHO.%SCRIPTNAME% - .NET command helper
-ECHO.Usage: %SCRIPTNAME% [command] [options]
-ECHO.
-ECHO.Commands:
-ECHO.rebuild     - clean and rebuild a solution (Shortcut: rb / cb)
-ECHO.rebuildtest - clean, rebuild and test a solution (Shortcut: rbt / cbt)
-ECHO.run         - run a project (Shortcut: r)
-ECHO.
-ECHO.Options:
-ECHO./C [configuration] - Set the build configuration
-ECHO./A [arguments]     - Add the arguments 
-
-GOTO :EOF
-
-
 REM --------------------------------------------------------------------------------
 :SHOWBANNER
 IF "%~1" == "" GOTO :EOF
@@ -474,4 +456,3 @@ REM ----------------------------------------------------------------------------
 :: The argument for this subroutine is the variable NAME.
 FOR %%i IN ("a=A" "b=B" "c=C" "d=D" "e=E" "f=F" "g=G" "h=H" "i=I" "j=J" "k=K" "l=L" "m=M" "n=N" "o=O" "p=P" "q=Q" "r=R" "s=S" "t=T" "u=U" "v=V" "w=W" "x=X" "y=Y" "z=Z") DO CALL SET "%1=%%%1:%%~i%%"
 GOTO:EOF
-

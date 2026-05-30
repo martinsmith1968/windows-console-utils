@@ -25,7 +25,6 @@ GOTO :EOF
 
 
 :USAGE
-:USAGE
 ECHO.%SCRIPTNAME% - Create a backup copy of a file
 ECHO.
 ECHO.%SCRIPTNAME% [file-name] [backup-method] { [backup-method-options] }

@@ -67,7 +67,7 @@ IF "%FILENAME%" == "" (
     GOTO :EOF
 )
 
-ECHO.Searching %ROOTDIR% for: %FILENAME%
+BANNERTEXT -fln 0 -hlc - -tlc - -tsc 0 "Searching %ROOTDIR% for: %FILENAME%"
 
 @IF "%DEBUG%" == "Y" @ECHO ON
 PUSHD "%ROOTDIR%"
@@ -130,6 +130,7 @@ ECHO./D     - Search for Directories only (/D- to exclude)
 ECHO./S     - Search for System Files only (/S- to exclude)
 ECHO./H     - Search for Hidden Files only (/H- to exclude)
 ECHO./R     - Search for ReadOnly Files only (/R- to exclude)
+ECHO./X     - Enable Debug mode
 
 GOTO :EOF
 
