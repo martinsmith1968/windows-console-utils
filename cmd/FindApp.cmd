@@ -44,6 +44,9 @@ IF NOT "%UTILS%" == "" (
     CALL :TRY "%UTILS%\mswin" %1 %2 %3 %4 %5 %6 %7 %8
     IF EXIST "%APP%" GOTO :FOUND
 
+    CALL :TRY "%UTILS%\win" %1 %2 %3 %4 %5 %6 %7 %8
+    IF EXIST "%APP%" GOTO :FOUND
+
     CALL :TRY "%UTILS%\SysInternals" %1 %2 %3 %4 %5 %6 %7 %8
     IF EXIST "%APP%" GOTO :FOUND
 )
