@@ -18,6 +18,7 @@ SET DRYRUN=N
 SET HELP=N
 SET ARGPOS=0
 SET COMMANDPREFIX=
+SET INTERNAL_ERROR=
 
 SET VERBOSITY=normal
 SET TARGET=
@@ -34,6 +35,7 @@ SET ISSELFCONTAINED=N
 SET NOBUILD=N
 SET NORESTORE=N
 SET LAUNCHPROFILE=
+SET VERIFY=N
 SET APPARGS=
 
 SET COMMANDCOUNT=0
@@ -42,6 +44,7 @@ SET COMMANDSDESCRIPTION=
 REM Commands:
 REM
 REM c - clean
+REM f - format
 REM r - restore
 REM b - build
 REM t - test
@@ -88,6 +91,8 @@ IF /I "%~1" == "/PO" SET PACKOUTPUTDIR=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "-PO" SET PACKOUTPUTDIR=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "/LP" SET LAUNCHPROFILE=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "-LP" SET LAUNCHPROFILE=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/OK" SET VERIFY=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-OK" SET VERIFY=Y&&SHIFT&&GOTO :PARSE
 
 IF /I "%~1" == "/Q"  SET VERBOSITY=quiet&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "-Q"  SET VERBOSITY=quiet&&SHIFT&&GOTO :PARSE
@@ -112,19 +117,22 @@ SET /A ARGPOS+=1
 CALL :PARSECOMMAND %~1
 IF "%PARSECOMMANDSUCCESS%" == "Y" SHIFT&&GOTO :PARSE
 
-IF "%HELP%" == "Y" (
-  CALL :USAGE
-  GOTO :EOF
-)
-
 CALL :USAGE
+ECHO.
+CALL :ERROR "%INTERNAL_ERROR%"
 CALL :ERROR "Unexpected argument as pos %ARGPOS% : %~1"
 GOTO :EOF
 
 
 :VALIDATE
+IF "%HELP%" == "Y" (
+  CALL :USAGE
+  GOTO :EOF
+)
+
 IF %COMMANDCOUNT% LSS 1 (
   CALL :USAGE
+  ECHO.
   CALL :ERROR "No command specified."
   GOTO :EOF
 )
@@ -145,6 +153,7 @@ ECHO.Usage: %~n0 [command] [options]
 ECHO.
 ECHO.Commands:
 ECHO.clean        - Clean the current solution / target [c]
+ECHO.format       - Format the current solution / target [f]
 ECHO.restore      - Restore the packages for the current solution / target [s]
 ECHO.build        - Build the current solution / target [b]
 ECHO.test         - Run tests for the current solution / target [t]
@@ -162,6 +171,7 @@ ECHO.
 ECHO.Options:
 ECHO./C [configuration] - Set the build configuration
 ECHO./A [arguments]     - Add the arguments 
+ECHO./OK                - Verify the command output (e.g. for build, verify that the expected output file(s) were created)
 ECHO./Q                 - Suppress output (Verbosity: quiet)
 ECHo./Y [verbosity]     - Set the verbosity level (default: minimal) (q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic])
 ECHO./Y[0-4]            - Set the Verbosity level (0=quiet, 1=minimal, 2=normal, 3=detailed, 4=diagnostic)
@@ -171,6 +181,7 @@ GOTO :EOF
 
 REM --------------------------------------------------------------------------------
 :ERROR
+IF "%~1" == "" GOTO :EOF
 ECHO.ERROR: %~1
 GOTO :EOF
 
@@ -193,11 +204,13 @@ GOTO :EOF
 
 REM --------------------------------------------------------------------------------
 :PARSECOMMAND
+SET INTERNAL_ERROR=
 SET PARSECOMMANDSUCCESS=N
 IF "%~1" == "" GOTO :EOF
 
 SET PARSECOMMANDSUCCESS=Y
 IF /I "%~1" == "clean"    CALL :ADDCOMMAND clean&& GOTO :EOF
+IF /I "%~1" == "format"   CALL :ADDCOMMAND format&& GOTO :EOF
 IF /I "%~1" == "restore"  CALL :ADDCOMMAND restore&& GOTO :EOF
 IF /I "%~1" == "build"    CALL :ADDCOMMAND build&& GOTO :EOF
 IF /I "%~1" == "test"     CALL :ADDCOMMAND test&& GOTO :EOF
@@ -226,6 +239,8 @@ SET COMMANDPART=%COMMANDPARTS:~0,1%
 
 IF /I "%COMMANDPART%" == "c" (
   CALL :ADDCOMMAND clean
+) ELSE IF /I "%COMMANDPART%" == "f" (
+  CALL :ADDCOMMAND format
 ) ELSE IF /I "%COMMANDPART%" == "s" (
   CALL :ADDCOMMAND restore
 ) ELSE IF /I "%COMMANDPART%" == "b" (
@@ -242,7 +257,7 @@ IF /I "%COMMANDPART%" == "c" (
   CALL :ADDCOMMAND version
 ) ELSE (
   SET PARSECOMMANDSUCCESS=N
-  CALL :ERROR "Invalid command alias/abbreviation: %COMMANDPART%"
+  SET INTERNAL_ERROR=Invalid command shortcut '%COMMANDPART%' in '%~1'
   GOTO :EOF
 )
 
@@ -259,6 +274,7 @@ IF /I "%COMMAND%" == "clean"    CALL :COMMAND_CLEAN   && GOTO :EOF
 IF /I "%COMMAND%" == "restore"  CALL :COMMAND_RESTORE && GOTO :EOF
 IF /I "%COMMAND%" == "build"    CALL :COMMAND_BUILD   && GOTO :EOF
 IF /I "%COMMAND%" == "test"     CALL :COMMAND_TEST    && GOTO :EOF
+IF /I "%COMMAND%" == "format"   CALL :COMMAND_FORMAT  && GOTO :EOF
 IF /I "%COMMAND%" == "pack"     CALL :COMMAND_PACK    && GOTO :EOF
 IF /I "%COMMAND%" == "publish"  CALL :COMMAND_PUBLISH && GOTO :EOF
 IF /I "%COMMAND%" == "run"      CALL :COMMAND_RUN     && GOTO :EOF
@@ -344,6 +360,22 @@ GOTO :EOF
 
 
 REM --------------------------------------------------------------------------------
+:COMMAND_FORMAT
+SET EXTRA=
+IF NOT "%TARGET%" == ""            SET EXTRA=%EXTRA% %TARGET%
+IF NOT "%VERBOSITY%" == ""         SET EXTRA=%EXTRA% -v %VERBOSITY%
+IF "%VERIFY%" == "Y"               SET EXTRA=%EXTRA% --verify-no-changes
+IF "%NORESTORE%" == "Y"            SET EXTRA=%EXTRA% --no-restore
+
+CALL :SHOWCOMMANDBANNER "format"
+@IF "%DEBUG%" == "Y" @ECHO ON
+%COMMANDPREFIX%dotnet format %EXTRA%
+@IF "%DEBUG%" == "Y" @ECHO OFF
+
+GOTO :EOF
+
+
+REM --------------------------------------------------------------------------------
 :COMMAND_PACK
 SET PACKAGEVERSION=%VERSION%
 IF NOT "%VERSIONSUFFIX%" == "" (
@@ -387,7 +419,7 @@ IF NOT "%VERSION%" == ""           SET EXTRA=%EXTRA% /p:Version=%VERSION%
 IF "%NOBUILD%" == "Y"              SET EXTRA=%EXTRA% --no-build
 IF "%NORESTORE%" == "Y"            SET EXTRA=%EXTRA% --no-restore
 
-CALL :SHOWCOMMANDBANNER "test"
+CALL :SHOWCOMMANDBANNER "publish"
 @IF "%DEBUG%" == "Y" @ECHO ON
 %COMMANDPREFIX%dotnet publish %EXTRA%
 @IF "%DEBUG%" == "Y" @ECHO OFF
