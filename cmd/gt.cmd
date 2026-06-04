@@ -39,6 +39,7 @@ CALL :DEFINECOMMAND clean   CLEAN               "Clean all untracked files"
 CALL :DEFINECOMMANDALIAS cfg config
 
 SET MAXCOMMANDNAMEDISPLAYLENGTH=8
+SET MAXOPTIONNAMEDISPLAYLENGTH=8
 
 :PARSE
 IF "%~1" === "" GOTO :VALIDATE
@@ -62,6 +63,13 @@ IF "%HELP%" == "Y" CALL :USAGE && GOTO :EOF
 IF "%DEBUG%" == "Y" SET SHOWCOMMAND=Y
 IF "%DRYRUN%" == "Y" SET COMMANDPREFIX=@ECHO.
 
+IF "%COMMAND%" == "" (
+    CALL :USAGE
+    ECHO.
+    CALL :ERROR No command provided
+    GOTO :EOF
+)
+
 REM *** Match a command
 SET FOUND=
 
@@ -78,7 +86,7 @@ IF NOT "%FOUND%" == "" (
 )
 
 ECHO.
-ECHO.Error: Command not found: %COMMAND%
+CALL :ERROR Command not found: %COMMAND%
 
 IF %CANDIDATES% GTR 0 (
     ECHO.
@@ -113,13 +121,13 @@ GOTO :EOF
 
 
 :ERROR
-ECHO.Error: %*
+ECHO.ERROR: %*
 
 GOTO :EOF
 
 
 :WARNING
-ECHO.Warning: %*
+ECHO.WARNING: %*
 
 GOTO :EOF
 
@@ -174,8 +182,9 @@ GOTO :EOF
 :USAGE
 ECHO.%SCRIPTNAME% - GIT shortcuts
 ECHO.
-ECHO.Usage: %SCRIPTNAME% [options] <command> [args]
-ECHO.Commands
+ECHO.Usage: %SCRIPTNAME% [command] { [args] } { [options] }
+ECHO.
+ECHO.Commands:
 FOR /L %%F IN (1,1,%COMMANDCOUNT%) DO (
     CALL :SETCOMMANDBYINDEX %%F
 
@@ -185,10 +194,10 @@ FOR /L %%F IN (1,1,%COMMANDCOUNT%) DO (
 )
 ECHO.
 ECHO.Options:
-ECHO./?             - Show Usage
-ECHO./X             - Activate Debug mode (Default: %DEBUG%)
-ECHO./Z             - Activate Dry Run mode (Default: %DRYRUN%)
-ECHO./SC            - Show Commands (Default: %SHOWCOMMAND%)
+PRINTFORMAT_R "{:<%MAXOPTIONNAMEDISPLAYLENGTH%} - {}" "/?" "Show Usage"
+PRINTFORMAT_R "{:<%MAXOPTIONNAMEDISPLAYLENGTH%} - {}" "/X" "Activate Debug mode (Default: %DEBUG%)"
+PRINTFORMAT_R "{:<%MAXOPTIONNAMEDISPLAYLENGTH%} - {}" "/Z" "Activate Dry Run mode (Default: %DRYRUN%)"
+PRINTFORMAT_R "{:<%MAXOPTIONNAMEDISPLAYLENGTH%} - {}" "/SC" "Show Commands (Default: %SHOWCOMMAND%)"
 
 GOTO :EOF
 
