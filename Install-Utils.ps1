@@ -118,10 +118,24 @@ enum InstallParameter {
     ExtractWildcard
     ExtractCommand
     ExtractCustomArguments
+    ExtractOverwrite
+    CopyOverwrite
     RenameTarget
     ShortcutFilenames
     ShortcutTarget
     ShortcutFolder
+}
+
+enum ExtractOverwriteMode {
+    Always
+    Never
+    RenameNew
+    RenameExisting
+}
+
+enum CopyOverwriteMode {
+    Always
+    Never
 }
 
 
@@ -332,6 +346,19 @@ class AppDefinition{
 
             # InstallType - CopyFile
             if ($this.InstallType -eq [InstallType]::CopyFiles) {
+                $copyOverwriteMode = [CopyOverwriteMode]::Always
+                if ($this.Parameters.ContainsKey([InstallParameter]::CopyOverwrite)) {
+                    $copyOverwriteMode = [CopyOverwriteMode]::Parse([CopyOverwriteMode], $this.Parameters[[InstallParameter]::CopyOverwrite])
+                }
+
+                if ($copyOverwriteMode -eq [CopyOverwriteMode]::Never) {
+                    $targetFile = Join-Path $targetPath $sourceFile.Name
+                    if (Test-Path -Path $targetFile) {
+                        Write-Log "-- Skipping existing file: ${targetFile}"
+                        continue
+                    }
+                }
+
                 Write-Log "-- Copying: ${sourceFile}"
                 Copy-Item -Path $sourceFile -Destination $targetPath -Force -Verbose:$verbose
             }
@@ -356,6 +383,20 @@ class AppDefinition{
                 if ($this.Parameters.ContainsKey([InstallParameter]::ExtractCustomArguments)) {
                     $customArguments = $this.Parameters[[InstallParameter]::ExtractCustomArguments]
                     $arguments += " ${customArguments}"
+                }
+
+                $extractOverwriteMode = [ExtractOverwriteMode]::Never
+                if ($this.Parameters.ContainsKey([InstallParameter]::ExtractOverwrite)) {
+                    $extractOverwriteMode = [ExtractOverwriteMode]::Parse([ExtractOverwriteMode], $this.Parameters[[InstallParameter]::ExtractOverwrite])
+                }
+                if ($extractOverwriteMode -eq [ExtractOverwriteMode]::Always) {
+                    $arguments += " -aoa"
+                } elseif ($extractOverwriteMode -eq [ExtractOverwriteMode]::Never) {
+                    $arguments += " -aos"
+                } elseif ($extractOverwriteMode -eq [ExtractOverwriteMode]::RenameNew) {
+                    $arguments += " -aou"
+                } elseif ($extractOverwriteMode -eq [ExtractOverwriteMode]::RenameExisting) {
+                    $arguments += " -aot"
                 }
 
                 Invoke-ExecuteProcess $commandFullName $arguments $verbose
@@ -497,10 +538,10 @@ $defined_apps = @(
     ,[AppDefinition]::new("OptimumX.Console.Apps",          "Mandatory",  [OSType]::Any, "apps\OptimumX",                                            "*.zip",                   "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ))
     ,[AppDefinition]::new("Info-ZIP",                       "Standard",   [OSType]::x32, "apps\info-zip",                                            "*win32*.zip",             "bin",                      [InstallType]::ExtractZip)
     ,[AppDefinition]::new("Info-ZIP",                       "Standard",   [OSType]::x64, "apps\info-zip",                                            "*win64*.zip",             "bin",                      [InstallType]::ExtractZip)
-    ,[AppDefinition]::new("My.Native.CPP.Console.Apps",     "Essentials", [OSType]::x64, "apps\martinsmith1968\NativeWindowsConsoleApplicationsCPP", "*.zip",                   "msbin",                    [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ))
-    ,[AppDefinition]::new("My.Native.RUST.Console.Apps",    "Essentials", [OSType]::x64, "apps\martinsmith1968\NativeConsoleApplicationsRUST",       "*.zip",                   "msbin",                    [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ))
-    ,[AppDefinition]::new("My.Legacy.NET.Console.Apps",     "Essentials", [OSType]::Any, "apps\martinsmith1968\legacy",                              "*.*",                     "msbin",                    [InstallType]::CopyFiles)
-    ,[AppDefinition]::new("My.NET.Console.Apps",            "Essentials", [OSType]::Any, "apps\martinsmith1968\ConsoleApplications",                 "*.zip",                   "msbin",                    [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ))
+    ,[AppDefinition]::new("My.Native.CPP.Console.Apps",     "Essentials", [OSType]::x64, "apps\martinsmith1968\NativeWindowsConsoleApplicationsCPP", "*.zip",                   "msbin",                    [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ), @{ [InstallParameter]::ExtractOverwrite = "RenameNew" })
+    ,[AppDefinition]::new("My.Native.RUST.Console.Apps",    "Essentials", [OSType]::x64, "apps\martinsmith1968\NativeConsoleApplicationsRUST",       "*.zip",                   "msbin",                    [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ), @{ [InstallParameter]::ExtractOverwrite = "RenameNew" })
+    ,[AppDefinition]::new("My.Legacy.NET.Console.Apps",     "Essentials", [OSType]::Any, "apps\martinsmith1968\legacy",                              "*.*",                     "msbin",                    [InstallType]::CopyFiles,  @( [InstallAction]::RenameReadmes ), @{ [InstallParameter]::CopyOverwrite = "Never" })
+    ,[AppDefinition]::new("My.NET.Console.Apps",            "Essentials", [OSType]::Any, "apps\martinsmith1968\ConsoleApplications",                 "*.zip",                   "msbin",                    [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ), @{ [InstallParameter]::ExtractOverwrite = "RenameNew" })
     ,[AppDefinition]::new("GnuWin32",                       "Standard",   [OSType]::Any, "apps\GnuWin32",                                            "*.zip",                   "",                         [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractWildcard = "gnuwin32\*.*" ; [InstallParameter]::ExtractCustomArguments = "-r" })
     ,[AppDefinition]::new("NirSoft.Console.Essentials",     "Standard",   [OSType]::Any, "apps\nirsoft\console",                                     "*.zip",                   "bin",                      [InstallType]::ExtractZip, @( [InstallAction]::RenameReadmes ))
     ,[AppDefinition]::new("Fourmilab.Crypto.Tools",         "Standard",   [OSType]::Any, "apps\fourmilab",                                           "*.zip",                   "bin",                      [InstallType]::ExtractZip, @{ [InstallParameter]::ExtractWildcard = "*.exe" })
