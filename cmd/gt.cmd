@@ -11,93 +11,103 @@ FOR %%* IN (.) DO SET CURRENTDIRNAME=%%~n*
 
 SET REPO_CONFIG_FILENAME=.git.config.toml
 
-SET I=0
+SET DEBUG=N
+SET DRYRUN=N
+SET HELP=N
+SET ARGPOS=0
+SET COMMAND=
+SET COMMANDARGS=
 
-SET /A I+=1
-SET COMMAND[%I%].NAME=clone
-SET COMMAND[%I%].LABEL=CLONE
-SET COMMAND[%I%].DESC=Clone a Repo
+SET COMMANDPREFIX=
 
-SET /A I+=1
-SET COMMAND[%I%].NAME=baseurl
-SET COMMAND[%I%].LABEL=BASEURL
-SET COMMAND[%I%].DESC=Set the Base URL for repos in this folder
+SET SHOWCOMMAND=N
 
-SET /A I+=1
-SET COMMAND[%I%].NAME=status
-SET COMMAND[%I%].LABEL=STATUS
-SET COMMAND[%I%].DESC=Show current status information
+SET COMMANDCOUNT=0
+SET COMMANDALIASCOUNT=0
 
-SET /A I+=1
-SET COMMAND[%I%].NAME=branch
-SET COMMAND[%I%].LABEL=BRANCH
-SET COMMAND[%I%].DESC=Show current branch
+REM                 NAME    LABEL               DESCRIPTION
+CALL :DEFINECOMMAND clone   CLONE               "Clone a Repo"
+CALL :DEFINECOMMAND baseurl BASEURL             "Set the Base URL for repos in this folder"
+CALL :DEFINECOMMAND status  STATUS              "Show current status information"
+CALL :DEFINECOMMAND branch  BRANCH              "Show current branch"
+CALL :DEFINECOMMAND unstage UNSTAGE             "Unstage a file already added"
+CALL :DEFINECOMMAND reset   RESET               "Reset (Undo) changes to a file"
+CALL :DEFINECOMMAND remstat REMOTEBRANCHSTATUS  "Show Remote Branch Status"
+CALL :DEFINECOMMAND config  SHOWCONFIG          "Show all Config (with scopes / files)"
+CALL :DEFINECOMMAND clean   CLEAN               "Clean all untracked files" 
 
-SET /A I+=1
-SET COMMAND[%I%].NAME=unstage
-SET COMMAND[%I%].LABEL=UNSTAGE
-SET COMMAND[%I%].DESC=Unstage a file already added
+CALL :DEFINECOMMANDALIAS cfg config
 
-SET /A I+=1
-SET COMMAND[%I%].NAME=reset
-SET COMMAND[%I%].LABEL=RESET
-SET COMMAND[%I%].DESC=Reset (Undo) changes to a file
+SET MAXCOMMANDNAMEDISPLAYLENGTH=8
 
-SET /A I+=1
-SET COMMAND[%I%].NAME=remstat
-SET COMMAND[%I%].LABEL=REMOTEBRANCHSTATUS
-SET COMMAND[%I%].DESC=Show Remote Branch Status
+:PARSE
+IF "%~1" === "" GOTO :VALIDATE
+IF /I "%~1" == "/?"  SET HELP=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-?"  SET HELP=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/X"  SET DEBUG=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-X"  SET DEBUG=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/Z"  SET DRYRUN=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-Z"  SET DRYRUN=Y&&SHIFT&&GOTO :PARSE
 
-SET /A I+=1
-SET COMMAND[%I%].NAME=config
-SET COMMAND[%I%].LABEL=SHOWCONFIG
-SET COMMAND[%I%].DESC=Show all Config (with scopes / files)
+IF /I "%~1" == "/SC" SET SHOWCOMMAND=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-SC" SET SHOWCOMMAND=Y&&SHIFT&&GOTO :PARSE
 
-SET /A I+=1
-SET COMMAND[%I%].NAME=test
-SET COMMAND[%I%].LABEL=TEST
-SET COMMAND[%I%].DESC=Testing
 
-SET /A I+=1
-SET COMMAND[%I%].NAME=clean
-SET COMMAND[%I%].LABEL=CLEAN
-SET COMMAND[%I%].DESC=Clean all untracked files
+SET /A ARGPOS+=1
+IF %ARGPOS% EQU 1 SET COMMAND=%~1&& SHIFT && GOTO :PARSE
 
-SET /A COUNT=%I%
 
-REM *** Parse
-IF "%~1" == "" (
-    CALL :USAGE
-    GOTO :EOF
-)
+:VALIDATE
+IF "%HELP%" == "Y" CALL :USAGE && GOTO :EOF
+IF "%DEBUG%" == "Y" SET SHOWCOMMAND=Y
+IF "%DRYRUN%" == "Y" SET COMMANDPREFIX=@ECHO.
 
 REM *** Match a command
 SET FOUND=
 
-CALL :LOCATECOMMANDEXACT "%~1"
+CALL :LOCATECOMMANDEXACT "%COMMAND%"
 IF NOT "%FOUND%" == "" (
-    CALL :!LABEL! %*
+    CALL :EXECUTE_!LABEL! %*
     GOTO :EOF
 )
 
-CALL :LOCATECOMMANDBEST "%~1"
+CALL :LOCATECOMMANDBEST "%COMMAND%"
 IF NOT "%FOUND%" == "" (
-    CALL :!LABEL! %*
+    CALL :EXECUTE_!LABEL! %*
     GOTO :EOF
 )
 
 ECHO.
-ECHO.Error: Command not found: %~1
+ECHO.Error: Command not found: %COMMAND%
 
 IF %CANDIDATES% GTR 0 (
     ECHO.
     ECHO.Ambiguous Command:
     FOR /L %%F IN (1,1,%CANDIDATES%) DO (
-        CALL :SETCOMMAND !CANDIDATE[%%F]!
+        CALL :SETCOMMANDBYINDEX !CANDIDATE[%%F]!
 
         ECHO.!NAME! - !DESC!
     )
 )
+
+GOTO :EOF
+
+
+:DEFINECOMMAND
+
+SET /A COMMANDCOUNT+=1
+SET COMMAND[%COMMANDCOUNT%].NAME=%~1
+SET COMMAND[%COMMANDCOUNT%].LABEL=%~2
+SET COMMAND[%COMMANDCOUNT%].DESC=%~3
+
+GOTO :EOF
+
+
+:DEFINECOMMANDALIAS
+
+SET /A COMMANDALIASCOUNT+=1
+SET COMMANDALIAS[%COMMANDALIASCOUNT%].ALIAS=%~1
+SET COMMANDALIAS[%COMMANDALIASCOUNT%].NAME=%~2
 
 GOTO :EOF
 
@@ -108,10 +118,16 @@ ECHO.Error: %*
 GOTO :EOF
 
 
-:SETCOMMAND
-SET "NAME=!COMMAND[%~1].NAME!"
-SET "LABEL=!COMMAND[%~1].LABEL!"
-SET "DESC=!COMMAND[%~1].DESC!"
+:WARNING
+ECHO.Warning: %*
+
+GOTO :EOF
+
+
+:SETCOMMANDBYINDEX
+SET NAME=!COMMAND[%~1].NAME!
+SET LABEL=!COMMAND[%~1].LABEL!
+SET DESC=!COMMAND[%~1].DESC!
 
 GOTO :EOF
 
@@ -119,8 +135,8 @@ GOTO :EOF
 :LOCATECOMMANDEXACT
 SET FOUND=
 
-FOR /L %%F IN (1,1,%COUNT%) DO (
-    CALL :SETCOMMAND %%F
+FOR /L %%F IN (1,1,%COMMANDCOUNT%) DO (
+    CALL :SETCOMMANDBYINDEX %%F
     
     IF /I "%~1" == "!NAME!" (
         SET FOUND=%%F
@@ -136,8 +152,8 @@ SET FOUND=
 
 SET CANDIDATES=0
 
-FOR /L %%F IN (1,1,%COUNT%) DO (
-    CALL :SETCOMMAND %%F
+FOR /L %%F IN (1,1,%COMMANDCOUNT%) DO (
+    CALL :SETCOMMANDBYINDEX %%F
     
     ECHO.!NAME!|FINDSTR "^%~1">NUL && SET /A CANDIDATES+=1 && SET "CANDIDATE[!CANDIDATES!]=%%F"
 )
@@ -148,7 +164,7 @@ IF %CANDIDATES% EQU 0 (
 
 IF %CANDIDATES% EQU 1 (
     SET FOUND=%CANDIDATE[1]%
-    CALL :SETCOMMAND %CANDIDATE[1]%
+    CALL :SETCOMMANDBYINDEX %CANDIDATE[1]%
     GOTO :EOF
 )
 
@@ -158,16 +174,26 @@ GOTO :EOF
 :USAGE
 ECHO.%SCRIPTNAME% - GIT shortcuts
 ECHO.
-FOR /L %%F IN (1,1,%COUNT%) DO (
-    CALL :SETCOMMAND %%F
+ECHO.Usage: %SCRIPTNAME% [options] <command> [args]
+ECHO.Commands
+FOR /L %%F IN (1,1,%COMMANDCOUNT%) DO (
+    CALL :SETCOMMANDBYINDEX %%F
 
-    ECHO.!NAME! - !DESC!
+    REM ECHO.!NAME! - !DESC!
+    REM PRINTFORMAT   "{0,-%MAXCOMMANDNAMEDISPLAYLENGTH%} - {1}" "!NAME!" "!DESC!"
+    PRINTFORMAT_R "{:<%MAXCOMMANDNAMEDISPLAYLENGTH%} - {}" "!NAME!" "!DESC!"
 )
+ECHO.
+ECHO.Options:
+ECHO./?             - Show Usage
+ECHO./X             - Activate Debug mode (Default: %DEBUG%)
+ECHO./Z             - Activate Dry Run mode (Default: %DRYRUN%)
+ECHO./SC            - Show Commands (Default: %SHOWCOMMAND%)
 
 GOTO :EOF
 
 
-:CLONE
+:EXECUTE_CLONE
 CALL GetTOMLValue.cmd ".BaseUrl" -f %REPO_CONFIG_FILENAME%
 
 SET SOURCE=%~2
@@ -180,11 +206,13 @@ IF /I "%SOURCE:~1,7%" == "http://" (
     ECHO.Using source %TOMLVALUE%%SOURCE%
 )
 
-GIT clone %SOURCE%
+@IF "%SHOWCOMMAND%" == "Y" @ECHO ON
+%COMMANDPREFIX%git clone %SOURCE%
+@IF "%SHOWCOMMAND%" == "Y" @ECHO OFF
 GOTO :EOF
 
 
-:BASEURL
+:EXECUTE_BASEURL
 IF "%~2" == "" (
     CALL :ERROR Invalid Base URL
     GOTO :EOF
@@ -196,45 +224,55 @@ TYPE %REPO_CONFIG_FILENAME%
 GOTO :EOF
 
 
-:STATUS
-GIT status
+:EXECUTE_STATUS
+@IF "%SHOWCOMMAND%" == "Y" @ECHO ON
+%COMMANDPREFIX%git status
+@IF "%SHOWCOMMAND%" == "Y" @ECHO OFF
 
 GOTO :EOF
 
 
-:BRANCH
-GIT rev-parse --abbrev-ref HEAD
+:EXECUTE_BRANCH
+@IF "%SHOWCOMMAND%" == "Y" @ECHO ON
+%COMMANDPREFIX%git rev-parse --abbrev-ref HEAD
+@IF "%SHOWCOMMAND%" == "Y" @ECHO OFF
 
 GOTO :EOF
 
 
-:UNSTAGE
+:EXECUTE_UNSTAGE
 IF "%~2" == "" (
   CALL :ERROR Invalid filename to unstage
   GOTO :EOF
 )
 
-GIT reset HEAD "%~2"
+@IF "%SHOWCOMMAND%" == "Y" @ECHO ON
+%COMMANDPREFIX%git reset HEAD "%~2"
+@IF "%SHOWCOMMAND%" == "Y" @ECHO OFF
 
 GOTO :EOF
 
 
-:RESET
+:EXECUTE_RESET
 IF "%~2" == "" (
   CALL :ERROR Invalid filename to reset
   GOTO :EOF
 )
 
-GIT checkout -- "%~2"
+@IF "%SHOWCOMMAND%" == "Y" @ECHO ON
+%COMMANDPREFIX%git checkout -- "%~2"
+@IF "%SHOWCOMMAND%" == "Y" @ECHO OFF
 
 GOTO :EOF
 
 
-:REMOTEBRANCHSTATUS
+:EXECUTE_REMOTEBRANCHSTATUS
 CALL BUILDUNIQUETEMPFILENAME "%SCRIPTNAME%.RemoteBranchStatus.tmp"
 SET TEMPFILENAME=%UNIQUETEMPFILENAME%
 
-git branch -r | grep -v HEAD > "%TEMPFILENAME%"
+@IF "%SHOWCOMMAND%" == "Y" @ECHO ON
+%COMMANDPREFIX%git branch -r | grep -v HEAD > "%TEMPFILENAME%"
+@IF "%SHOWCOMMAND%" == "Y" @ECHO OFF
 
 FOR /F %%F IN (%TEMPFILENAME%) DO CALL :SHOWSTATUS "%%~F"
 
@@ -243,34 +281,31 @@ DEL /Q "%TEMPFILENAME%" >NUL
 GOTO :EOF
 
 
-:SHOWSTATUS
-git show --format="%%ci %%cr %%cn %%d" "%~1" | head -n 1
+:EXECUTE_SHOWSTATUS
+@IF "%SHOWCOMMAND%" == "Y" @ECHO ON
+%COMMANDPREFIX%git show --format="%%ci %%cr %%cn %%d" "%~1" | head -n 1
+@IF "%SHOWCOMMAND%" == "Y" @ECHO OFF
 
 GOTO :EOF
 
 
-:SHOWCONFIG
+:EXECUTE_SHOWCONFIG
 SET PARAM=--show-scope
 IF /I "%~2" == "FILE"  SET PARAM=--show-origin
 IF /I "%~2" == "FILES" SET PARAM=--show-origin
 
-git config --list %PARAM%
+@IF "%SHOWCOMMAND%" == "Y" @ECHO ON
+%COMMANDPREFIX%git config --list %PARAM%
+@IF "%SHOWCOMMAND%" == "Y" @ECHO OFF
 
 GOTO :EOF
 
 
-:TEST
-ECHO.1 = %~1
-ECHO.2 = %~2
-ECHO.3 = %~3
-ECHO.4 = %~4
-
-GOTO :EOF
-
-
-:CLEAN
+:EXECUTE_CLEAN
 REM https://stackoverflow.com/questions/61212/how-do-i-remove-local-untracked-files-from-the-current-git-working-tree
 
-git clean -fdx
+@IF "%SHOWCOMMAND%" == "Y" @ECHO ON
+%COMMANDPREFIX%git clean -fdx
+@IF "%SHOWCOMMAND%" == "Y" @ECHO OFF
 
 GOTO :EOF
