@@ -23,6 +23,7 @@ SET USAGE=N
 SET VERBOSE=Y
 
 SET FORCE=N
+SET FINDPARENT=N
 
 SET NEWDIR=#
 SET DELIM=#
@@ -61,6 +62,8 @@ IF /I "%~1" == "-V-"    SET VERBOSE=N&&SHIFT && GOTO :PARSE
 IF /I "%~1" == "/V-"    SET VERBOSE=N&&SHIFT && GOTO :PARSE
 IF /I "%~1" == "-F"     SET FORCE=Y&&SHIFT && GOTO :PARSE
 IF /I "%~1" == "/F"     SET FORCE=Y&&SHIFT && GOTO :PARSE
+IF /I "%~1" == "-P"     SET FINDPARENT=Y&&SHIFT && GOTO :PARSE
+IF /I "%~1" == "/P"     SET FINDPARENT=Y&&SHIFT && GOTO :PARSE
 
 SET /A ARGPOS+=1
 
@@ -356,6 +359,14 @@ IF "%TARGET%" == "" SET TARGET=%CD%
 CALL :FINDBYEXACTTARGET "%TARGET%"
 IF "%FOUND%" == "Y" (
     GOTO :EOF
+)
+
+IF "%FINDPARENT%" == "Y" (
+    CALL :DEBUG "Exact target not found, trying parent folders..."
+    CALL :FINDBYPARTIALTARGET "%TARGET%"
+    IF "%FOUND%" == "Y" (
+        GOTO :EOF
+    )
 )
 
 CALL :ERROR "Directory not found : %TARGET%"
