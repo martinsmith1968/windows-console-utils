@@ -92,7 +92,7 @@ IF "%FOUND%" == "Y" (
     GOTO :EOF
 )
 
-CALL :FINDBYPARTIALNAME "%~1"
+CALL :FINDBYPARTIALNAME "%~1" "%~2"
 IF "%FOUND%" == "Y" (
     SET NEWDIR=%FINDTARGET%
     GOTO :EOF
@@ -306,33 +306,48 @@ GOTO :EOF
 
 
 :FINDBYPARTIALNAME
-SET FOUND=0
+SET FOUND=N
+SET FOUNDCOUNT=0
 SET FINDALIAS=
 SET FINDTARGET=
 
+SET TARTGETINDEX=0
+IF NOT "%~2" == "" SET TARTGETINDEX=%~2
+
 FOR /F "usebackq tokens=1,2* delims=%DELIM%" %%A IN ("%DATAFILE%") DO (
     CALL :DEBUG "%%A - %%B"
+
+    SET MATCHED=N
     
     CALL :DOESSTARTWITH "%%A" "%~1"
     IF "!STARTSWITH!" == "Y" (
         ECHO.Matched: %%A - %%B
+        SET MATCHED=Y
         
-        SET /A FOUND += 1
+        SET /A FOUNDCOUNT += 1
         SET FINDALIAS=%%A
         SET FINDTARGET=%%B
     ) ELSE (
         CALL :DOESCONTAIN "%%A" "%~1"
         IF "!CONTAINS!" == "Y" (
             ECHO.Matched: %%A - %%B
+            SET MATCHED=Y
             
-            SET /A FOUND += 1
+            SET /A FOUNDCOUNT += 1
             SET FINDALIAS=%%A
             SET FINDTARGET=%%B
         )
     )
+
+    IF "!MATCHED!" == "Y" (
+        IF !FOUNDCOUNT! EQU %TARTGETINDEX% (
+            SET FOUND=Y
+            GOTO :EOF
+        )
+    )
 )
 
-IF %FOUND% EQU 1 (
+IF %FOUNDCOUNT% EQU 1 (
     SET FOUND=Y
 )
 
@@ -462,7 +477,7 @@ GOTO :EOF
 :USAGE
 CALL :SHOWHEADER
 ECHO.Usage:
-ECHO.%SCRIPTNAME% [ add / del / set / list / where / export / npp / {alias-name} ] {options}
+ECHO.%SCRIPTNAME% [ add / del / set / list / where / export / npp / {alias-name} [ { match-index } ] ] {options}
 ECHO.
 ECHO.add - add a favourite folder
 ECHO.E.g. %SCRIPTNAME% add {alias-name} [ {folder} ] 
