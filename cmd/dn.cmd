@@ -13,6 +13,9 @@ SET SCRIPTPATH=%~dp0
 SET SCRIPTNAME=%~n0
 SET SCRIPTFULLFILENAME=%~dpnx0
 
+FOR %%* IN (.) DO SET CURRENTDIR=%%~dpn*
+FOR %%* IN (.) DO SET CURRENTDIRNAME=%%~nx*
+
 SET DEBUG=N
 SET DRYRUN=N
 SET HELP=N
@@ -35,6 +38,8 @@ SET ISSELFCONTAINED=N
 SET NOBUILD=N
 SET NORESTORE=N
 SET LAUNCHPROFILE=
+SET LAUNCHPROFILEAUTO=N
+SET RUNTIMEENVIRONMENT=
 SET VERIFY=N
 SET APPARGS=
 
@@ -91,6 +96,10 @@ IF /I "%~1" == "/PO" SET PACKOUTPUTDIR=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "-PO" SET PACKOUTPUTDIR=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "/LP" SET LAUNCHPROFILE=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "-LP" SET LAUNCHPROFILE=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/LPA" SET LAUNCHPROFILEAUTO=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-LPA" SET LAUNCHPROFILEAUTO=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/E"   SET RUNTIMEENVIRONMENT=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-E"   SET RUNTIMEENVIRONMENT=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "/OK" SET VERIFY=Y&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "-OK" SET VERIFY=Y&&SHIFT&&GOTO :PARSE
 
@@ -175,6 +184,7 @@ ECHO./OK                - Verify the command output (e.g. for build, verify that
 ECHO./Q                 - Suppress output (Verbosity: quiet)
 ECHo./Y [verbosity]     - Set the verbosity level (default: minimal) (q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic])
 ECHO./Y[0-4]            - Set the Verbosity level (0=quiet, 1=minimal, 2=normal, 3=detailed, 4=diagnostic)
+ECHO./E [environment]   - Set the runtime environment
 
 GOTO :EOF
 
@@ -429,18 +439,24 @@ GOTO :EOF
 
 REM --------------------------------------------------------------------------------
 :COMMAND_RUN
+
+IF "%LAUNCHPROFILEAUTO%" == "Y" (
+  SET LAUNCHPROFILE=%CURRENTDIRNAME%
+)
+
 SET EXTRA=
-IF NOT "%TARGET%" == ""            SET EXTRA=%EXTRA% %TARGET%
-IF NOT "%VERBOSITY%" == ""         SET EXTRA=%EXTRA% -v %VERBOSITY%
-IF NOT "%CONFIGURATION%" == ""     SET EXTRA=%EXTRA% -c %CONFIGURATION%
-IF NOT "%FRAMEWORK%" == ""         SET EXTRA=%EXTRA% -f %FRAMEWORK%
-IF NOT "%RUNTIMEIDENTIFIER%" == "" SET EXTRA=%EXTRA% -r %RUNTIMEIDENTIFIER%
-IF "%ISSELFCONTAINED%" == "Y"      SET EXTRA=%EXTRA% --self-contained
-IF "%NOBUILD%" == "Y"              SET EXTRA=%EXTRA% --no-build
-IF "%NORESTORE%" == "Y"            SET EXTRA=%EXTRA% --no-restore
-IF NOT "%LAUNCHPROFILE%" == ""     SET EXTRA=%EXTRA% -lp %LAUNCHPROFILE%
-IF "%LAUNCHPROFILE%" == ""         SET EXTRA=%EXTRA% --no-launch-profile
-IF NOT "%APPARGS%" == ""           SET EXTRA=%EXTRA% -- %APPARGS%
+IF NOT "%TARGET%" == ""             SET EXTRA=%EXTRA% %TARGET%
+IF NOT "%VERBOSITY%" == ""          SET EXTRA=%EXTRA% -v %VERBOSITY%
+IF NOT "%CONFIGURATION%" == ""      SET EXTRA=%EXTRA% -c %CONFIGURATION%
+IF NOT "%FRAMEWORK%" == ""          SET EXTRA=%EXTRA% -f %FRAMEWORK%
+IF NOT "%RUNTIMEIDENTIFIER%" == ""  SET EXTRA=%EXTRA% -r %RUNTIMEIDENTIFIER%
+IF NOT "%RUNTIMEENVIRONMENT%" == "" SET EXTRA=%EXTRA% -e %RUNTIMEENVIRONMENT%
+IF "%ISSELFCONTAINED%" == "Y"       SET EXTRA=%EXTRA% --self-contained
+IF "%NOBUILD%" == "Y"               SET EXTRA=%EXTRA% --no-build
+IF "%NORESTORE%" == "Y"             SET EXTRA=%EXTRA% --no-restore
+IF NOT "%LAUNCHPROFILE%" == ""      SET EXTRA=%EXTRA% -lp %LAUNCHPROFILE%
+IF "%LAUNCHPROFILE%" == ""          SET EXTRA=%EXTRA% --no-launch-profile
+IF NOT "%APPARGS%" == ""            SET EXTRA=%EXTRA% -- %APPARGS%
 
 CALL :SHOWCOMMANDBANNER "run %APPARGS%"
 @IF "%DEBUG%" == "Y" @ECHO ON

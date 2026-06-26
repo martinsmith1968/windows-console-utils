@@ -25,3 +25,4 @@ ce=ConEmu $*
 sw=stopwatch $*
 xp=explore $*
 hex=imhex $*
+cuda=cudatext $*
