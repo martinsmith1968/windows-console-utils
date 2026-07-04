@@ -13,11 +13,15 @@ SET SCRIPTPATH=%~dp0
 SET SCRIPTNAME=%~n0
 SET SCRIPTFULLFILENAME=%~dpnx0
 
+FOR %%* IN (.) DO SET CURRENTDIR=%%~dpn*
+FOR %%* IN (.) DO SET CURRENTDIRNAME=%%~nx*
+
 SET DEBUG=N
 SET DRYRUN=N
 SET HELP=N
 SET ARGPOS=0
 SET COMMANDPREFIX=
+SET INTERNAL_ERROR=
 
 SET VERBOSITY=normal
 SET TARGET=
@@ -34,6 +38,9 @@ SET ISSELFCONTAINED=N
 SET NOBUILD=N
 SET NORESTORE=N
 SET LAUNCHPROFILE=
+SET LAUNCHPROFILEAUTO=N
+SET RUNTIMEENVIRONMENT=
+SET VERIFY=N
 SET APPARGS=
 
 SET COMMANDCOUNT=0
@@ -42,10 +49,11 @@ SET COMMANDSDESCRIPTION=
 REM Commands:
 REM
 REM c - clean
+REM f - format
 REM r - restore
 REM b - build
-REM p - pack
 REM t - test
+REM p - pack
 REM l - publish
 REM r - run
 REM v - version
@@ -53,46 +61,52 @@ REM v - version
 REM --------------------------------------------------------------------------------
 :PARSE
 IF /I "%~1" == "" GOTO :VALIDATE
-IF /I "%~1" == "/?" SET HELP=Y&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "-?" SET HELP=Y&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "/X" SET DEBUG=Y&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "-X" SET DEBUG=Y&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "/Z" SET DRYRUN=Y&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "-Z" SET DRYRUN=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/?"  SET HELP=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-?"  SET HELP=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/X"  SET DEBUG=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-X"  SET DEBUG=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/Z"  SET DRYRUN=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-Z"  SET DRYRUN=Y&&SHIFT&&GOTO :PARSE
 
-IF /I "%~1" == "/T" SET TARGET=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "-T" SET TARGET=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "/C" SET CONFIGURATION=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "-C" SET CONFIGURATION=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "/A" SET ARCHITECTURE=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "-A" SET ARCHITECTURE=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/T"  SET TARGET=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-T"  SET TARGET=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/C"  SET CONFIGURATION=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-C"  SET CONFIGURATION=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/A"  SET ARCHITECTURE=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-A"  SET ARCHITECTURE=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "/OS" SET OSPLATFORM=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "-OS" SET OSPLATFORM=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "/V" SET VERSION=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "-V" SET VERSION=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "/U" SET VERSIONSUFFIX=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "-U" SET VERSIONSUFFIX=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "/F" SET FRAMEWORK=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "-F" SET FRAMEWORK=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "/R" SET RUNTIMEIDENTIFIER=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "-R" SET RUNTIMEIDENTIFIER=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/V"  SET VERSION=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-V"  SET VERSION=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/U"  SET VERSIONSUFFIX=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-U"  SET VERSIONSUFFIX=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/F"  SET FRAMEWORK=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-F"  SET FRAMEWORK=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/R"  SET RUNTIMEIDENTIFIER=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-R"  SET RUNTIMEIDENTIFIER=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "/SC" SET ISSELFCONTAINED=Y&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "-SC" SET ISSELFCONTAINED=Y&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "/NB" SET NOBUILD=Y&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "-NB" SET NOBUILD=Y&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "/NR" SET NORESTORE=Y&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "-NR" SET NORESTORE=Y&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "/O" SET OUTPUTDIR=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "-O" SET OUTPUTDIR=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/O"  SET OUTPUTDIR=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-O"  SET OUTPUTDIR=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "/PO" SET PACKOUTPUTDIR=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "-PO" SET PACKOUTPUTDIR=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "/LP" SET LAUNCHPROFILE=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "-LP" SET LAUNCHPROFILE=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/LPA" SET LAUNCHPROFILEAUTO=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-LPA" SET LAUNCHPROFILEAUTO=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/E"   SET RUNTIMEENVIRONMENT=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-E"   SET RUNTIMEENVIRONMENT=%~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/OK" SET VERIFY=Y&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-OK" SET VERIFY=Y&&SHIFT&&GOTO :PARSE
 
-IF /I "%~1" == "/Q" SET VERBOSITY=quiet&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "-Q" SET VERBOSITY=quiet&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "/Y" SET VERBOSITY=%~2&&SHIFT%&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "-Y" SET VERBOSITY=%~2&&SHIFT%&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/Q"  SET VERBOSITY=quiet&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-Q"  SET VERBOSITY=quiet&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/Y"  SET VERBOSITY=%~2&&SHIFT%&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-Y"  SET VERBOSITY=%~2&&SHIFT%&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "/Y0" SET VERBOSITY=quiet&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "-Y0" SET VERBOSITY=quiet&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "/Y1" SET VERBOSITY=minimal&&SHIFT&&GOTO :PARSE
@@ -104,27 +118,31 @@ IF /I "%~1" == "-Y3" SET VERBOSITY=detailed&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "/Y4" SET VERBOSITY=diagnostic&&SHIFT&&GOTO :PARSE
 IF /I "%~1" == "-Y4" SET VERBOSITY=diagnostic&&SHIFT&&GOTO :PARSE
 
-IF /I "%~1" == "/A" SET APPARGS=%APPARGS% %~2&&SHIFT&&SHIFT&&GOTO :PARSE
-IF /I "%~1" == "-A" SET APPARGS=%APPARGS% %~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "/A"  SET APPARGS=%APPARGS% %~2&&SHIFT&&SHIFT&&GOTO :PARSE
+IF /I "%~1" == "-A"  SET APPARGS=%APPARGS% %~2&&SHIFT&&SHIFT&&GOTO :PARSE
 
 SET /A ARGPOS+=1
 
 CALL :PARSECOMMAND %~1
 IF "%PARSECOMMANDSUCCESS%" == "Y" SHIFT&&GOTO :PARSE
 
-IF "%HELP%" == "Y" (
-  CALL :USAGE
-  GOTO :EOF
-)
-
 CALL :USAGE
+ECHO.
+CALL :ERROR "%INTERNAL_ERROR%"
 CALL :ERROR "Unexpected argument as pos %ARGPOS% : %~1"
 GOTO :EOF
 
 
 :VALIDATE
+IF "%HELP%" == "Y" (
+  CALL :USAGE
+  GOTO :EOF
+)
+
 IF %COMMANDCOUNT% LSS 1 (
   CALL :USAGE
+  ECHO.
+  CALL :ERROR "No command specified."
   GOTO :EOF
 )
 
@@ -144,6 +162,7 @@ ECHO.Usage: %~n0 [command] [options]
 ECHO.
 ECHO.Commands:
 ECHO.clean        - Clean the current solution / target [c]
+ECHO.format       - Format the current solution / target [f]
 ECHO.restore      - Restore the packages for the current solution / target [s]
 ECHO.build        - Build the current solution / target [b]
 ECHO.test         - Run tests for the current solution / target [t]
@@ -152,8 +171,8 @@ ECHO.publish      - Publish the current solution / target [u]
 ECHO.run          - Run the current project / target [r]
 ECHO.version      - Show the dotnet version / available versions [v]
 ECHO.
-ECHO.rebuild      - clean and build [rb]
-ECHO.rebuildtest  - clean, rebuild and test a solution [rbt]
+ECHO.rebuild      - clean and build [cb]
+ECHO.rebuildtest  - clean, rebuild and test a solution [cbt]
 ECHO.
 ECHO.You can concatenate commands using the shortcuts, to execute those commands in sequence.
 ECHO. E.g. 'csbtp' will execute 'clean', 'restore', 'build', 'test', and 'pack'.
@@ -161,24 +180,18 @@ ECHO.
 ECHO.Options:
 ECHO./C [configuration] - Set the build configuration
 ECHO./A [arguments]     - Add the arguments 
+ECHO./OK                - Verify the command output (e.g. for build, verify that the expected output file(s) were created)
 ECHO./Q                 - Suppress output (Verbosity: quiet)
 ECHo./Y [verbosity]     - Set the verbosity level (default: minimal) (q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic])
 ECHO./Y[0-4]            - Set the Verbosity level (0=quiet, 1=minimal, 2=normal, 3=detailed, 4=diagnostic)
+ECHO./E [environment]   - Set the runtime environment
 
 GOTO :EOF
 
 
-
-
-rebuild
-
-
-
-
-
-
 REM --------------------------------------------------------------------------------
 :ERROR
+IF "%~1" == "" GOTO :EOF
 ECHO.ERROR: %~1
 GOTO :EOF
 
@@ -201,9 +214,13 @@ GOTO :EOF
 
 REM --------------------------------------------------------------------------------
 :PARSECOMMAND
+SET INTERNAL_ERROR=
 SET PARSECOMMANDSUCCESS=N
+IF "%~1" == "" GOTO :EOF
 
+SET PARSECOMMANDSUCCESS=Y
 IF /I "%~1" == "clean"    CALL :ADDCOMMAND clean&& GOTO :EOF
+IF /I "%~1" == "format"   CALL :ADDCOMMAND format&& GOTO :EOF
 IF /I "%~1" == "restore"  CALL :ADDCOMMAND restore&& GOTO :EOF
 IF /I "%~1" == "build"    CALL :ADDCOMMAND build&& GOTO :EOF
 IF /I "%~1" == "test"     CALL :ADDCOMMAND test&& GOTO :EOF
@@ -217,18 +234,23 @@ IF /I "%~1" == "rebuild" (
   CALL :ADDCOMMAND build
   GOTO :EOF
 )
+if /I "%~1" == "rebuildtest" (
+  CALL :ADDCOMMAND clean
+  CALL :ADDCOMMAND build
+  CALL :ADDCOMMAND test
+  GOTO :EOF
+)
 
 SET COMMANDPARTS=%~1
 :PARSECOMMANDLOOP
-IF "%COMMANDPARTS%" == "" (
-  SET PARSECOMMANDSUCCESS=Y
-  GOTO :EOF
-)
+IF "%COMMANDPARTS%" == "" GOTO :EOF
 
 SET COMMANDPART=%COMMANDPARTS:~0,1%
 
 IF /I "%COMMANDPART%" == "c" (
   CALL :ADDCOMMAND clean
+) ELSE IF /I "%COMMANDPART%" == "f" (
+  CALL :ADDCOMMAND format
 ) ELSE IF /I "%COMMANDPART%" == "s" (
   CALL :ADDCOMMAND restore
 ) ELSE IF /I "%COMMANDPART%" == "b" (
@@ -244,7 +266,8 @@ IF /I "%COMMANDPART%" == "c" (
 ) ELSE IF /I "%COMMANDPART%" == "v" (
   CALL :ADDCOMMAND version
 ) ELSE (
-  CALL :ERROR "Invalid command alias/abbreviation: %COMMANDPART%"
+  SET PARSECOMMANDSUCCESS=N
+  SET INTERNAL_ERROR=Invalid command shortcut '%COMMANDPART%' in '%~1'
   GOTO :EOF
 )
 
@@ -261,6 +284,7 @@ IF /I "%COMMAND%" == "clean"    CALL :COMMAND_CLEAN   && GOTO :EOF
 IF /I "%COMMAND%" == "restore"  CALL :COMMAND_RESTORE && GOTO :EOF
 IF /I "%COMMAND%" == "build"    CALL :COMMAND_BUILD   && GOTO :EOF
 IF /I "%COMMAND%" == "test"     CALL :COMMAND_TEST    && GOTO :EOF
+IF /I "%COMMAND%" == "format"   CALL :COMMAND_FORMAT  && GOTO :EOF
 IF /I "%COMMAND%" == "pack"     CALL :COMMAND_PACK    && GOTO :EOF
 IF /I "%COMMAND%" == "publish"  CALL :COMMAND_PUBLISH && GOTO :EOF
 IF /I "%COMMAND%" == "run"      CALL :COMMAND_RUN     && GOTO :EOF
@@ -346,6 +370,22 @@ GOTO :EOF
 
 
 REM --------------------------------------------------------------------------------
+:COMMAND_FORMAT
+SET EXTRA=
+IF NOT "%TARGET%" == ""            SET EXTRA=%EXTRA% %TARGET%
+IF NOT "%VERBOSITY%" == ""         SET EXTRA=%EXTRA% -v %VERBOSITY%
+IF "%VERIFY%" == "Y"               SET EXTRA=%EXTRA% --verify-no-changes
+IF "%NORESTORE%" == "Y"            SET EXTRA=%EXTRA% --no-restore
+
+CALL :SHOWCOMMANDBANNER "format"
+@IF "%DEBUG%" == "Y" @ECHO ON
+%COMMANDPREFIX%dotnet format %EXTRA%
+@IF "%DEBUG%" == "Y" @ECHO OFF
+
+GOTO :EOF
+
+
+REM --------------------------------------------------------------------------------
 :COMMAND_PACK
 SET PACKAGEVERSION=%VERSION%
 IF NOT "%VERSIONSUFFIX%" == "" (
@@ -389,7 +429,7 @@ IF NOT "%VERSION%" == ""           SET EXTRA=%EXTRA% /p:Version=%VERSION%
 IF "%NOBUILD%" == "Y"              SET EXTRA=%EXTRA% --no-build
 IF "%NORESTORE%" == "Y"            SET EXTRA=%EXTRA% --no-restore
 
-CALL :SHOWCOMMANDBANNER "test"
+CALL :SHOWCOMMANDBANNER "publish"
 @IF "%DEBUG%" == "Y" @ECHO ON
 %COMMANDPREFIX%dotnet publish %EXTRA%
 @IF "%DEBUG%" == "Y" @ECHO OFF
@@ -399,18 +439,24 @@ GOTO :EOF
 
 REM --------------------------------------------------------------------------------
 :COMMAND_RUN
+
+IF "%LAUNCHPROFILEAUTO%" == "Y" (
+  SET LAUNCHPROFILE=%CURRENTDIRNAME%
+)
+
 SET EXTRA=
-IF NOT "%TARGET%" == ""            SET EXTRA=%EXTRA% %TARGET%
-IF NOT "%VERBOSITY%" == ""         SET EXTRA=%EXTRA% -v %VERBOSITY%
-IF NOT "%CONFIGURATION%" == ""     SET EXTRA=%EXTRA% -c %CONFIGURATION%
-IF NOT "%FRAMEWORK%" == ""         SET EXTRA=%EXTRA% -f %FRAMEWORK%
-IF NOT "%RUNTIMEIDENTIFIER%" == "" SET EXTRA=%EXTRA% -r %RUNTIMEIDENTIFIER%
-IF "%ISSELFCONTAINED%" == "Y"      SET EXTRA=%EXTRA% --self-contained
-IF "%NOBUILD%" == "Y"              SET EXTRA=%EXTRA% --no-build
-IF "%NORESTORE%" == "Y"            SET EXTRA=%EXTRA% --no-restore
-IF NOT "%LAUNCHPROFILE%" == ""     SET EXTRA=%EXTRA% -lp %LAUNCHPROFILE%
-IF "%LAUNCHPROFILE%" == ""         SET EXTRA=%EXTRA% --no-launch-profile
-IF NOT "%APPARGS%" == ""           SET EXTRA=%EXTRA% -- %APPARGS%
+IF NOT "%TARGET%" == ""             SET EXTRA=%EXTRA% %TARGET%
+IF NOT "%VERBOSITY%" == ""          SET EXTRA=%EXTRA% -v %VERBOSITY%
+IF NOT "%CONFIGURATION%" == ""      SET EXTRA=%EXTRA% -c %CONFIGURATION%
+IF NOT "%FRAMEWORK%" == ""          SET EXTRA=%EXTRA% -f %FRAMEWORK%
+IF NOT "%RUNTIMEIDENTIFIER%" == ""  SET EXTRA=%EXTRA% -r %RUNTIMEIDENTIFIER%
+IF NOT "%RUNTIMEENVIRONMENT%" == "" SET EXTRA=%EXTRA% -e %RUNTIMEENVIRONMENT%
+IF "%ISSELFCONTAINED%" == "Y"       SET EXTRA=%EXTRA% --self-contained
+IF "%NOBUILD%" == "Y"               SET EXTRA=%EXTRA% --no-build
+IF "%NORESTORE%" == "Y"             SET EXTRA=%EXTRA% --no-restore
+IF NOT "%LAUNCHPROFILE%" == ""      SET EXTRA=%EXTRA% -lp %LAUNCHPROFILE%
+IF "%LAUNCHPROFILE%" == ""          SET EXTRA=%EXTRA% --no-launch-profile
+IF NOT "%APPARGS%" == ""            SET EXTRA=%EXTRA% -- %APPARGS%
 
 CALL :SHOWCOMMANDBANNER "run %APPARGS%"
 @IF "%DEBUG%" == "Y" @ECHO ON
@@ -428,22 +474,6 @@ SET APP=%SCRIPTPATH%\..\win\dotnetver.exe
 %COMMANDPREFIX%START "" "%APP%"
 %COMMANDPREFIX%dotnet --info
 @IF "%DEBUG%" == "Y" @ECHO OFF
-
-GOTO :EOF
-
-
-:USAGE
-ECHO.%SCRIPTNAME% - .NET command helper
-ECHO.Usage: %SCRIPTNAME% [command] [options]
-ECHO.
-ECHO.Commands:
-ECHO.rebuild     - clean and rebuild a solution (Shortcut: rb / cb)
-ECHO.rebuildtest - clean, rebuild and test a solution (Shortcut: rbt / cbt)
-ECHO.run         - run a project (Shortcut: r)
-ECHO.
-ECHO.Options:
-ECHO./C [configuration] - Set the build configuration
-ECHO./A [arguments]     - Add the arguments 
 
 GOTO :EOF
 
@@ -474,4 +504,3 @@ REM ----------------------------------------------------------------------------
 :: The argument for this subroutine is the variable NAME.
 FOR %%i IN ("a=A" "b=B" "c=C" "d=D" "e=E" "f=F" "g=G" "h=H" "i=I" "j=J" "k=K" "l=L" "m=M" "n=N" "o=O" "p=P" "q=Q" "r=R" "s=S" "t=T" "u=U" "v=V" "w=W" "x=X" "y=Y" "z=Z") DO CALL SET "%1=%%%1:%%~i%%"
 GOTO:EOF
-

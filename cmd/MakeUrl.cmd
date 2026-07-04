@@ -18,7 +18,7 @@ SET COMMANDPREFIX=
 
 SET TARGETURL=
 SET FILENAME=
-SET FOLDER=
+SET FOLDER=.
 
 REM **********************************************************************
 REM ** Guides
@@ -67,6 +67,7 @@ IF "%USAGE%" == "Y" (
 IF "%DEBUG%" == "Y" (
     ECHO.TARGETURL = %TARGETURL%
     ECHO.FOLDER    = %FOLDER%
+    ECHO.FILENAME  = %FILENAME%
 )
 
 IF "%DRYRUN%" == "Y" SET COMMANDPREFIX=ECHO.

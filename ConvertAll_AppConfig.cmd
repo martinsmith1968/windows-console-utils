@@ -128,7 +128,7 @@ ECHO.Usage: %SCRIPTNAME% { [options] }
 ECHO.
 ECHO.Options:
 ECHO. /?    - Show Usage
-ECHO. /V[-] - Enable/Disable Verbouse output (Default: %VERBOSE%)
+ECHO. /V[-] - Enable/Disable Verbose output (Default: %VERBOSE%)
 ECHO. /X    - Activate Debug mode (Default: %DEBUG%)
 ECHO. /Z    - Activate DryRun mode (Default: %DRYRUN%)
 
