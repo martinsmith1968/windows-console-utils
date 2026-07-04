@@ -330,10 +330,11 @@ FOR /F "usebackq tokens=1,2* delims=%DELIM%" %%A IN ("%DATAFILE%") DO (
     ) ELSE (
         CALL :DOESCONTAIN "%%A" "%~1"
         IF "!CONTAINS!" == "Y" (
-            ECHO.Matched: %%A - %%B
+            SET /A FOUNDCOUNT += 1
+
+            ECHO.Matched [!FOUNDCOUNT!]: %%A - %%B
             SET MATCHED=Y
             
-            SET /A FOUNDCOUNT += 1
             SET FINDALIAS=%%A
             SET FINDTARGET=%%B
         )
