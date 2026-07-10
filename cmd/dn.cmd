@@ -178,6 +178,7 @@ ECHO.You can concatenate commands using the shortcuts, to execute those commands
 ECHO. E.g. 'csbtp' will execute 'clean', 'restore', 'build', 'test', and 'pack'.
 ECHO.
 ECHO.Options:
+ECHO./T [target]        - Set the target solution or project
 ECHO./C [configuration] - Set the build configuration
 ECHO./A [arguments]     - Add the arguments 
 ECHO./OK                - Verify the command output (e.g. for build, verify that the expected output file(s) were created)
